@@ -1,0 +1,957 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_oracleAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "participant",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum JusterCore.BetType",
+        "name": "betType",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "BetPlaced",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "ConfigUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "dynamics",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isAboveEqWin",
+        "type": "bool"
+      }
+    ],
+    "name": "EventClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "currencyPair",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "targetDynamics",
+        "type": "uint256"
+      }
+    ],
+    "name": "EventCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ForceMajeureTriggered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "provider",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      }
+    ],
+    "name": "LiquidityProvided",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "MeasurementStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "participant",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Withdrawn",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "LIQUIDITY_PRECISION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PROVIDER_PROFIT_FEE_PRECISION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "RATIO_PRECISION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "SHARE_PRECISION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TARGET_DYNAMICS_PRECISION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "bakingRewards",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimRetainedProfits",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "closeEvent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "config",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "measureStartFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expirationFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rewardCallFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "oracleAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minMeasurePeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxMeasurePeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minPeriodToBetsClose",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxPeriodToBetsClose",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minLiquidityPercent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxLiquidityPercent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxAllowedMeasureLag",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rewardFeeSplitAfter",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "providerProfitFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isEventCreationPaused",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "currencyPair",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "targetDynamics",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "betsCloseTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "measurePeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "liquidityPercent",
+        "type": "uint256"
+      }
+    ],
+    "name": "createEvent",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "events",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "currencyPair",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "createdTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "targetDynamics",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "betsCloseTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "measurePeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "measureOracleStartTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startRate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isClosed",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "closedOracleTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "closedRate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "closedDynamics",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isBetsAboveEqWin",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "poolAboveEq",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "poolBelow",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalLiquidityShares",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "liquidityPercent",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "measureStartFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expirationFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rewardCallFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "oracleAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxAllowedMeasureLag",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isForceMajeure",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getEvent",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "currencyPair",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "targetDynamics",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "betsCloseTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "measurePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "measureOracleStartTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isClosed",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "closedOracleTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "closedRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "closedDynamics",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBetsAboveEqWin",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolAboveEq",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "poolBelow",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalLiquidityShares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidityPercent",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "measureStartFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expirationFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rewardCallFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAllowedMeasureLag",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isForceMajeure",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct JusterCore.Event",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "participant",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPosition",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "providedLiquidityAboveEq",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "providedLiquidityBelow",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "betsAboveEq",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "betsBelow",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "liquidityShares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositedLiquidity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "depositedBets",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isWithdrawn",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct JusterCore.Position",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextEventId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum JusterCore.BetType",
+        "name": "betType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimalWinAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "placeBet",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedRatioAboveEq",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedRatioBelow",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxSlippage",
+        "type": "uint256"
+      }
+    ],
+    "name": "provideLiquidity",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "retainedProfits",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "startMeasurement",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "triggerForceMajeure",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "measureStartFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expirationFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rewardCallFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minMeasurePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxMeasurePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minPeriodToBetsClose",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxPeriodToBetsClose",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minLiquidityPercent",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxLiquidityPercent",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAllowedMeasureLag",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rewardFeeSplitAfter",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "providerProfitFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isEventCreationPaused",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct JusterCore.Config",
+        "name": "_config",
+        "type": "tuple"
+      }
+    ],
+    "name": "updateConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
+] 

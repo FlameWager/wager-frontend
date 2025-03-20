@@ -1,0 +1,54 @@
+/* eslint-disable vue/multi-word-component-names */
+import { createApp, h } from "vue"
+import { createMetaManager } from "vue-meta"
+import { createPinia } from "pinia"
+import { useWalletStore } from './store/wallet';
+
+/** Analytics */
+import VueGtag from "vue-gtag"
+import amplitude from "amplitude-js"
+amplitude.getInstance().init(import.meta.env.VITE_AMPLITUDE)
+
+// import "@sdk"
+
+import { initFlags } from "@/services/flags"
+initFlags()
+
+import App from "./App.vue"
+import router from "./router"
+
+const app = createApp({
+	render: () => h(App),
+})
+
+/**
+ * Use
+ */
+app.use(router)
+app.use(createPinia())
+app.use(createMetaManager())
+app.use(VueGtag, { config: { id: "G-58LD5WNLR4" } })
+
+/**
+ * Provide
+ */
+app.provide("amplitude", amplitude.getInstance())
+
+/**
+ * Global components
+ */
+import Icon from "@/components/icons/Icon.vue"
+import Flex from "@layout/Flex.vue"
+import Text from "@typography/Text.vue"
+app.component("Icon", Icon)
+app.component("Flex", Flex)
+app.component("Text", Text)
+
+
+/**
+ * Initialize wallet connection
+ */
+const walletStore = useWalletStore();
+walletStore.init();
+
+app.mount("#app")
