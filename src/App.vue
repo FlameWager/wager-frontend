@@ -19,7 +19,7 @@ import "@/styles/text.css"
  */
 import Teleports from "@base/Teleports.vue"
 import TheHeader from "@base/Header/TheHeader.vue"
-// import Footer from "@base/Footer.vue"
+import Footer from "@base/Footer.vue"
 // import NetworkStatus from "@base/NetworkStatus.vue"
 
 /**
@@ -40,7 +40,7 @@ import Notifications from "@local/Notifications.vue"
 		<div class="app_base">
 			<router-view />
 		</div>
-		<!-- <Footer class="footer" /> -->
+		<Footer class="footer" />
 	</div>
 
 	<!-- <NetworkStatus /> -->

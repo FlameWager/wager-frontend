@@ -10,7 +10,7 @@ import { DateTime } from "luxon"
 /**
  * Services
  */
-import { juster, switchNetwork, currentNetwork } from "@sdk"
+import { flameWager, switchNetwork, currentNetwork } from "@sdk"
 import { capitalizeFirstLetter } from "@utils/misc"
 
 /**
@@ -91,7 +91,7 @@ const checkNetwork = async () => {
 }
 
 const checkQuotes = () => {
-	const quotesDiff = initCurrentDt.diff(DateTime.fromISO(marketStore.markets["XTZ-USD"].quotes[0].timestamp), ["minutes"]).toObject()
+	const quotesDiff = initCurrentDt.diff(DateTime.fromISO(marketStore.markets["TIA-USD"].quotes[0].timestamp), ["minutes"]).toObject()
 
 	if (quotesDiff.minutes >= 10) {
 		status.quotes = STATUSES.DELAYED
@@ -101,13 +101,13 @@ const checkQuotes = () => {
 }
 
 const handleSwitch = (network) => {
-	juster.sdk._provider.client.clearActiveAccount().then(async () => {
+	// juster.sdk._provider.client.clearActiveAccount().then(async () => {
 		switchNetwork(network, router)
-	})
+	// })
 }
 
 marketStore.$subscribe((mutation, state) => {
-	if (state.markets["XTZ-USD"].quotes.length) {
+	if (state.markets["TIA-USD"].quotes.length) {
 		checkQuotes()
 	}
 })
@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
 
 				<div :class="$style.columns">
 					<div :class="$style.column">
-						<div :class="$style.name">Juster</div>
+						<div :class="$style.name">FlameWager</div>
 
 						<router-link to="/" :class="$style.link">Explore</router-link>
 						<router-link to="/events" :class="$style.link">Events</router-link>
@@ -227,10 +227,10 @@ onBeforeUnmount(() => {
 					<Flex align="center" wrap="wrap" :class="$style.line">
 						<Text size="14" weight="500" color="tertiary"> © {{ DateTime.now().year }}&nbsp;&nbsp; </Text>
 						<Text size="11" color="support">✦</Text>
-						<Text size="14" weight="500" color="secondary"> &nbsp;&nbsp;Juster 1.1&nbsp; </Text>
+						<Text size="14" weight="500" color="secondary"> &nbsp;&nbsp;FlameWager&nbsp; </Text>
 						<Text size="14" weight="500" color="tertiary"> Market data provided by&nbsp; </Text>
 						<a href="https://tzkt.io/KT1AdbYiPYb5hDuEuVrfxmFehtnBCXv4Np7r/operations/" target="_blank">
-							<Text size="14" weight="500" color="secondary"> Harbinger Oracle </Text>
+							<Text size="14" weight="500" color="secondary"> Chainlink Oracle </Text>
 						</a>
 					</Flex>
 

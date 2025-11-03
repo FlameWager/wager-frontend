@@ -43,6 +43,11 @@ import { useMarketStore } from "@store/market"
 import { useAccountStore } from "@store/account"
 import { useNotificationsStore } from "@store/notifications"
 
+/**
+ * Config
+ */
+import { activeChainConfig } from "@config"
+
 // eslint-disable-next-line no-undef
 const props = defineProps({
 	event: { type: Object, default: () => {} },
@@ -636,7 +641,7 @@ onUnmounted(() => {
 						<span>Stakes:</span>
 						{{ event.bets.length }} <br />
 						<span>Liquidity:</span>
-						{{ event.totalLiquidityProvided.toFixed(0) }} XTZ
+						{{ event.totalLiquidityProvided.toFixed(0) }} {{activeChainConfig.nativeCurrency.symbol}}
 					</template>
 				</Tooltip>
 

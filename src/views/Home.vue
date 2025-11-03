@@ -1,100 +1,89 @@
 <template>
   <div class="home">
-    <h1>Juster Finance on Flame</h1>
-    <p class="description">
-      The most transparent betting system on Flame Network. 
-      Bet on price changes of different currency pairs like ETH-USD, BTC-USD & TIA-USD.
-    </p>
-    
-    <div class="cards">
-      <div class="card">
-        <h2>Create Events</h2>
-        <p>Start a new betting event by defining currency pair, target dynamics, and more.</p>
-        <router-link to="/events" class="button">Explore Events</router-link>
-      </div>
-      
-      <div class="card">
-        <h2>Place Bets</h2>
-        <p>Bet on whether prices will go above or below the target.</p>
-        <router-link to="/events" class="button">Start Betting</router-link>
-      </div>
-      
-      <div class="card">
-        <h2>Provide Liquidity</h2>
-        <p>Earn rewards by providing liquidity to betting events.</p>
-        <router-link to="/events" class="button">Provide Liquidity</router-link>
-      </div>
-    </div>
-
-    <div v-if="latestEvents.length > 0" class="latest-events">
-      <h2>Latest Events</h2>
-      <event-list :events="latestEvents" />
+    <div class="content">
+      <h1>Wager</h1>
+      <p class="description">
+        A platform allowing users to take part in an automated betting market by creating events, providing liquidity to them, and making bets on Flame. 
+      </p>
+      <router-link to="/events" class="cta-button">
+        <Icon name="compass" size="20" />
+        Explore Events
+      </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-// import EventList from '@/components/EventList.vue'
-// import { useJusterStore } from '@/store/juster'
-
-// const justerStore = useJusterStore()
-const latestEvents = ref([])
-
-onMounted(async () => {
-  try {
-    // await justerStore.loadEvents()
-    // latestEvents.value = justerStore.events.slice(0, 3) // Show only 3 latest events
-  } catch (error) {
-    console.error('Failed to load events:', error)
-  }
-})
+import Icon from '@/components/icons/Icon.vue'
 </script>
 
 <style scoped>
 .home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px); /* Account for header and footer */
+  padding: 0 20px;
+}
+
+.content {
   text-align: center;
+  max-width: 600px;
+}
+
+h1 {
+  font-size: 48px;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  background: linear-gradient(45deg, var(--text-primary), var(--brand));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .description {
-  max-width: 800px;
-  margin: 0 auto 40px;
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: #555;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
 }
 
-.cards {
-  display: flex;
-  justify-content: space-between;
-  margin: 40px 0;
-  gap: 20px;
-}
-
-.card {
-  flex: 1;
-  background: #f9f9f9;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.button {
-  display: inline-block;
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: #42b983;
-  color: white;
-  border-radius: 4px;
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-white);
+  background: var(--brand);
+  border-radius: 12px;
   text-decoration: none;
-  transition: background-color 0.3s;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.button:hover {
-  background-color: #389e70;
+.cta-button:hover {
+  transform: translateY(-2px);
+  background: var(--btn-primary-bg-hover);
 }
 
-.latest-events {
-  margin-top: 60px;
+.cta-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 36px;
+  }
+
+  .description {
+    font-size: 18px;
+  }
+
+  .cta-button {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
 }
 </style> 

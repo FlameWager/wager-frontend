@@ -16,6 +16,11 @@ import { useWalletStore } from "@store/wallet"
  */
 import Tooltip from "@ui/Tooltip.vue"
 
+/**
+ * Config
+ */
+import { activeChainConfig } from "@config"
+
 const walletStore = useWalletStore()
 
 const reward = computed(() => {
@@ -37,7 +42,7 @@ const reward = computed(() => {
 					<Text size="12" weight="700" color="primary">
 						{{ numberWithSymbol(reward, ",") }}&nbsp;
 					</Text>
-					<Text size="12" weight="700" color="tertiary"> XTZ </Text>
+					<Text size="12" weight="700" color="tertiary"> {{activeChainConfig.nativeCurrency.symbol}} </Text>
 				</Flex>
 			</Flex>
 

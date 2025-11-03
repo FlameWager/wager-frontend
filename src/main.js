@@ -4,6 +4,11 @@ import { createMetaManager } from "vue-meta"
 import { createPinia } from "pinia"
 import { useWalletStore } from './store/wallet';
 
+// Import modules.
+import { VueQueryPlugin } from '@tanstack/vue-query';
+import { WagmiPlugin } from '@wagmi/vue';
+import { config } from '@config';
+
 /** Analytics */
 import VueGtag from "vue-gtag"
 import amplitude from "amplitude-js"
@@ -17,17 +22,21 @@ initFlags()
 import App from "./App.vue"
 import router from "./router"
 
+// Create app
 const app = createApp({
 	render: () => h(App),
 })
 
 /**
- * Use
+ * Use plugins
  */
 app.use(router)
 app.use(createPinia())
 app.use(createMetaManager())
 app.use(VueGtag, { config: { id: "G-58LD5WNLR4" } })
+// Add Wagmi and Vue Query plugins
+app.use(WagmiPlugin, { config })
+app.use(VueQueryPlugin, {})
 
 /**
  * Provide
@@ -44,11 +53,11 @@ app.component("Icon", Icon)
 app.component("Flex", Flex)
 app.component("Text", Text)
 
-
 /**
  * Initialize wallet connection
  */
 const walletStore = useWalletStore();
-walletStore.init();
-
+// Initialize wallet after Wagmi is set up
 app.mount("#app")
+// Initialize wallet after the app is mounted
+walletStore.init();

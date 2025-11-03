@@ -15,7 +15,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useWalletStore } from '@/store/wallet';
-import { chainConfig } from '@/services/config';
+import { activeChainConfig } from '@config';
 
 const walletStore = useWalletStore();
 
@@ -35,7 +35,7 @@ const shortAddress = computed(() => {
 
 // Methods
 const connect = () => {
-  walletStore.connect();
+  walletStore.connectWallet();
 };
 
 const disconnect = () => {

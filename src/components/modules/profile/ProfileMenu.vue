@@ -20,6 +20,11 @@ import { analytics } from "@sdk"
 import { useWalletStore } from "@store/wallet"
 import { useNotificationsStore } from "@store/notifications"
 
+/**
+ * Config
+ */
+import { activeChainConfig } from "@config"
+
 const walletStore = useWalletStore()
 const notificationsStore = useNotificationsStore()
 
@@ -108,7 +113,7 @@ const handleLogout = () => {
 											",",
 										)
 									}}&nbsp;
-									<Text color="tertiary">XTZ</Text>
+									<Text color="tertiary">{{activeChainConfig.nativeCurrency.symbol}}</Text>
 								</Flex>
 							</Text>
 							<Text size="11" weight="600" color="tertiary">

@@ -3,8 +3,8 @@
  */
 import { computed, reactive } from "vue"
 import { ethers } from "ethers"
-
-import { rpcNodes } from "@config"
+import { switchChain } from "@wagmi/core"
+import { activeRpcNode, NETWORK_TYPE, activeChainConfig } from "@config"
 
 /**
  * Services.Constants
@@ -28,67 +28,23 @@ const flameWager = reactive({
     pools: {}
   },
   address: null,
-  network: null,
-  chainId: null,
+  network: NETWORK_TYPE,
+  chainId: activeRpcNode.chainId,
   isConnected: false
 })
 
 const currentNetwork = computed(() => {
-  if (flameWager.chainId === 912559) return Networks.DEVNET
-  if (flameWager.chainId === 16604737732183) return Networks.TESTNET
-  return Networks.MAINNET
+  return activeChainConfig.network
 })
 
-/**
- * Storage "activeNetwork"
- */
-if (!localStorage.activeNetwork) {
-  localStorage.activeNetwork = Networks.DEVNET
-}
+// Set default network from environment
+localStorage.activeNetwork = localStorage.activeNetwork || NETWORK_TYPE;
 
 /**
  * Validate "activeNetwork" (Integrity Repair)
  */
 if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(localStorage.activeNetwork)) {
-  localStorage.activeNetwork = Networks.DEVNET
-}
-
-/**
- * Connect to wallet and initialize contracts
- */
-const connect = async () => {
-  try {
-    // Check if MetaMask is installed
-    if (!window.ethereum) {
-      throw new Error("No Ethereum wallet detected. Please install MetaMask or another wallet.")
-    }
-
-    // Request account access
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-    flameWager.address = accounts[0]
-
-    // Create provider and signer
-    flameWager.provider = new ethers.providers.Web3Provider(window.ethereum)
-    flameWager.signer = flameWager.provider.getSigner()
-    
-    // Get network information
-    const network = await flameWager.provider.getNetwork()
-    flameWager.chainId = network.chainId
-    flameWager.network = currentNetwork.value
-
-    // Initialize contracts with appropriate addresses based on network
-    await initializeContracts()
-    
-    flameWager.isConnected = true
-
-    // Set up listeners for network or account changes
-    setupEventListeners()
-    
-    return true
-  } catch (error) {
-    console.error("Connection error:", error)
-    return false
-  }
+  localStorage.activeNetwork = NETWORK_TYPE;
 }
 
 /**
@@ -176,58 +132,18 @@ const disconnect = () => {
 const switchNetwork = async (network, router) => {
   if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(network)) return
   
-  const networkConfig = {
-    [Networks.DEVNET]: {
-      chainId: '0xDEADF', // 912559 in hex
-      chainName: 'Flame Devnet',
-      nativeCurrency: {
-        name: 'nRIA',
-        symbol: 'nRIA',
-        decimals: 18
-      },
-      rpcUrls: [rpcNodes[network][0].url],
-      blockExplorerUrls: ['https://explorer.evm.dusk-11.devnet.astria.org']
-    },
-    [Networks.TESTNET]: {
-      chainId: '0xF00000000007', // 16604737732183 in hex
-      chainName: 'Flame Testnet',
-      nativeCurrency: {
-        name: 'TIA',
-        symbol: 'TIA',
-        decimals: 18
-      },
-      rpcUrls: [rpcNodes[network][0].url],
-      blockExplorerUrls: ['https://explorer.flame.dawn-1.astria.org']
-    },
-    [Networks.MAINNET]: {
-      // Replace with actual Flame mainnet information when available
-      chainId: '0x0', 
-      chainName: 'Flame Mainnet',
-      nativeCurrency: {
-        name: 'RIA',
-        symbol: 'RIA',
-        decimals: 18
-      },
-      rpcUrls: [rpcNodes[network][0].url],
-      blockExplorerUrls: ['https://explorer.flame.astria.org']
-    }
-  }
-  
   try {
-    if (window.ethereum) {
-      // Try to switch to the network
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: networkConfig[network].chainId }],
-      })
-    }
+    // Try to switch to the network
+    await switchChain(config, {
+      chainId: chainConfig[network].id
+    });
   } catch (switchError) {
     // This error code indicates that the chain has not been added to MetaMask.
     if (switchError.code === 4902) {
       try {
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
-          params: [networkConfig[network]],
+          params: [chainConfig[network]],
         })
       } catch (addError) {
         console.error(addError)
@@ -242,15 +158,6 @@ const switchNetwork = async (network, router) => {
   }
 }
 
-/**
- * Get balance
- */
-const getBalance = async () => {
-  if (!flameWager.provider || !flameWager.address) return "0"
-  
-  const balance = await flameWager.provider.getBalance(flameWager.address)
-  return ethers.utils.formatEther(balance)
-}
 
 /**
  * Utility function to destroy subscription
@@ -265,10 +172,7 @@ const destroySubscription = (sub) => {
 export { 
   flameWager, 
   currentNetwork, 
-  connect,
-  disconnect,
-  switchNetwork, 
+  switchNetwork,
   initPools, 
-  getBalance,
   destroySubscription 
 }

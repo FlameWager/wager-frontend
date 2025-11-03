@@ -20,6 +20,11 @@ import { f, numberWithSymbol } from "@utils/amounts"
  */
 import { useAccountStore } from "@store/account"
 
+/**
+ * Config
+ */
+import { activeChainConfig } from "@config"
+
 const accountStore = useAccountStore()
 
 const props = defineProps({
@@ -157,12 +162,12 @@ const isFinished = computed(() => {
 		</template>
 
 		<Button v-else @click.prevent="handleWithdraw" :type="btnType" size="small" :disabled="isWithdrawDisabled" block>
-			<template v-if="successfulWithdrawal">Successfully withdrawn {{ successfulWithdrawal?.amount.toFixed(2) }} XTZ</template>
+			<template v-if="successfulWithdrawal">Successfully withdrawn {{ successfulWithdrawal?.amount.toFixed(2) }} {{activeChainConfig.nativeCurrency.symbol}}</template>
 
 			<template v-else-if="accountStore.pendingTransaction.awaiting"> Can`t withdraw right now </template>
 
 			<template v-else-if="!isWithdrawing && positionForWithdraw">
-				<Icon name="coins" size="16" />Withdraw {{ numberWithSymbol(positionForWithdraw.value, ",") }} XTZ
+				<Icon name="coins" size="16" />Withdraw {{ numberWithSymbol(positionForWithdraw.value, ",") }} {{activeChainConfig.nativeCurrency.symbol}}
 			</template>
 
 			<template v-else-if="!isWon && isInvolved">No funds to withdraw</template>

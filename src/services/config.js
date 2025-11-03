@@ -1,3 +1,123 @@
+import { http, createConfig } from '@wagmi/vue'
+import { injected, metaMask, safe, walletConnect } from '@wagmi/vue/connectors'
+
+// Get network type from environment variable
+export const NETWORK_TYPE = import.meta.env.VITE_NETWORK_TYPE || 'testnet';
+// const projectId = '<WALLETCONNECT_PROJECT_ID>'
+
+export const chainConfig = {
+  devnet: {
+    id: 912559,
+    name: 'Flame Devnet',
+    network: 'devnet',
+    nativeCurrency: {
+      name: 'nRIA',
+      symbol: 'nRIA',
+      decimals: 18
+    },
+    rpcUrls: {
+      default: {
+        http: ['https://rpc.evm.dusk-11.devnet.astria.org'],
+        webSocket: ['wss://rpc.evm.dusk-11.devnet.astria.org'],
+      },
+      public: {
+        http: ['https://rpc.evm.dusk-11.devnet.astria.org'],
+        webSocket: ['wss://rpc.evm.dusk-11.devnet.astria.org'],
+      },
+    },
+    blockExplorers: {
+      default: { name: 'Flame Devnet Explorer', url: 'https://explorer.evm.dusk-11.devnet.astria.org' },
+    },
+  },
+  testnet: {
+    id: 16604737732183,
+    name: 'Flame Testnet',
+    network: 'testnet',
+    nativeCurrency: {
+      name: 'TIA',
+      symbol: 'TIA',
+      decimals: 18
+    },
+    rpcUrls: {
+      default: {
+        http: ['https://rpc.flame.dawn-1.astria.org'],
+        webSocket: ['wss://rpc.flame.dawn-1.astria.org'],
+      },
+      public: {
+        http: ['https://rpc.flame.dawn-1.astria.org'],
+        webSocket: ['wss://rpc.flame.dawn-1.astria.org'],
+      },
+    },
+    blockExplorers: {
+      default: { name: 'Flame Testnet Explorer', url: 'https://explorer.flame.dawn-1.astria.org' },
+    },
+  },
+  mainnet: {
+    id: 16604737732183,
+    name: 'Flame Mainnet',
+    network: 'mainnet',
+    nativeCurrency: {
+      name: 'TIA',
+      symbol: 'TIA',
+      decimals: 18
+    },
+    rpcUrls: {
+      default: {
+        http: ['https://rpc.flame.astria.org'],
+        webSocket: ['wss://rpc.flame.astria.org'],
+      },
+      public: {
+        http: ['https://rpc.flame.astria.org'],
+        webSocket: ['wss://rpc.flame.astria.org'],
+      },
+    },
+    blockExplorers: {
+      default: { name: 'Flame Mainnet Explorer', url: 'https://explorer.flame.astria.org' },
+    },
+  }
+};
+
+// Get the active chain config based on environment
+export const activeChainConfig = chainConfig[NETWORK_TYPE];
+
+export const rpcNodes = {
+  devnet: { 
+    url: chainConfig.devnet.rpcUrls.default,
+    chainId: chainConfig.devnet.id,
+    name: chainConfig.devnet.name,
+    code: "devnet" 
+  },
+  testnet: { 
+    url: chainConfig.testnet.rpcUrls[0],
+    chainId: chainConfig.testnet.id,
+    name: chainConfig.testnet.name,
+    code: "testnet"
+  },
+  mainnet: { 
+    url: chainConfig.mainnet.rpcUrls[0],
+    chainId: chainConfig.mainnet.id,
+    name: chainConfig.mainnet.name,
+    code: "mainnet"
+  }
+};
+
+// Get active RPC node based on environment
+export const activeRpcNode = rpcNodes[NETWORK_TYPE];
+
+// Create wagmi config with active chain
+export const config = createConfig({
+  chains: [activeChainConfig],
+  connectors: [
+    metaMask(),
+    injected(),
+    // walletConnect({ projectId }),
+    safe(),
+  ],
+  transports: {
+    [activeChainConfig.id]: http(activeChainConfig.rpcUrls.default.http)
+  },
+});
+
 export const dipdup = {
 	mainnet: {
 		graphq: "https://api.juster.fi/v1/graphql",
@@ -17,68 +137,6 @@ export const supportedMarkets = {
 
 export const sanity = {
 	id: "2tokh3zd",
-}
-
-export const chainConfig = {
-    devnet: {
-      chainId: '0xDECAF', // 912559 in hex
-      chainName: 'Flame Devnet',
-      nativeCurrency: {
-        name: 'nRIA',
-        symbol: 'nRIA',
-        decimals: 18
-      },
-      rpcUrls: ['https://rpc.evm.dusk-11.devnet.astria.org'],
-      blockExplorerUrls: ['https://explorer.evm.dusk-11.devnet.astria.org']
-    },
-    testnet: {
-      chainId: '0xF00000000007', // 16604737732183 in hex
-      chainName: 'Flame Testnet',
-      nativeCurrency: {
-        name: 'TIA',
-        symbol: 'TIA',
-        decimals: 18
-      },
-      rpcUrls: ['https://rpc.flame.dawn-1.astria.org'],
-      blockExplorerUrls: ['https://explorer.flame.dawn-1.astria.org']
-    },
-    mainnet: {
-        chainId: '0xF00000000007', // 16604737732183 in hex
-        chainName: 'Flame Mainnet',
-        nativeCurrency: {
-          name: 'TIA',
-          symbol: 'TIA',
-          decimals: 18
-        },
-        rpcUrls: ['https://rpc.flame.astria.org'],
-        blockExplorerUrls: ['https://explorer.flame.astria.org']
-    }
-};
-export const rpcNodes = {
-	devnet: [
-		{ 
-            url: "https://rpc.evm.dusk-11.devnet.astria.org",
-            chainId: 912559,
-            name: "Flame Devnet",
-            code: "devnet" 
-        }
-	],
-	testnet: [
-		{ 
-            url: "https://rpc.flame.dawn-1.astria.org",
-            chainId: 16604737732183,
-            name: "Flame Testnet",
-            code: "testnet"
-        }
-	],
-	mainnet: [
-		{ 
-            url: "https://rpc.flame.astria.org", 
-            chainId: 16604737732183,
-            name: "Flame Mainnet",
-            code: "mainnet"
-        }
-	]
 }
 
 export const verifiedMakers = {

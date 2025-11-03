@@ -1,5 +1,5 @@
 export const Networks = {
     MAINNET: "mainnet",
-    TESTNET: "dawnnet",
+    TESTNET: "testnet",
     DEVNET: "devnet",
 }

@@ -16,7 +16,7 @@ import cloneDeep from "lodash.clonedeep"
  * Services
  */
 import { flameWager, analytics, currentNetwork } from "@sdk"
-import { verifiedMakers } from "~/services/config"
+import { verifiedMakers } from "@config"
 
 /**
  * API

@@ -80,7 +80,7 @@ const isActive = (linkName) => {
 	}
 }
 
-const pkh = computed(() => walletStore.address)
+const pkh = computed(() => walletStore.pkh)
 
 // const handleNetworkDblClick = () => {
 // 	juster.sdk._provider.client.clearActiveAccount().then(async () => {

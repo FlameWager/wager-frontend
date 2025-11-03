@@ -1,4 +1,4 @@
-import { supportedMarkets } from "@/services/config"
+import { supportedMarkets } from "@config"
 
 export const toClipboard = (value) => {
 	navigator.clipboard.writeText(value)

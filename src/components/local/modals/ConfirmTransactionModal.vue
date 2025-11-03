@@ -22,6 +22,11 @@ import { toReadableDuration } from "@utils/date"
 import { useAccountStore } from "@store/account"
 import { useApplicationCacheStore } from "@store/cache"
 
+/**
+ * Config
+ */
+import { activeChainConfig } from "@config"
+
 const props = defineProps({
 	show: Boolean,
 })
@@ -169,7 +174,7 @@ watch(
 								}}
 							</Text>
 							<Text size="14" weight="600" color="tertiary">
-								&nbsp;XTZ
+								&nbsp;{{activeChainConfig.nativeCurrency.symbol}}
 							</Text>
 						</Flex>
 					</Flex>
@@ -318,7 +323,7 @@ watch(
 							}}
 						</Text>
 						<Text size="14" weight="600" color="tertiary">
-							&nbsp;XTZ
+							&nbsp;{{activeChainConfig.nativeCurrency.symbol}}
 						</Text>
 					</Flex>
 				</Flex>

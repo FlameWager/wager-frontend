@@ -15,6 +15,11 @@ import Modal from "@ui/Modal.vue"
  */
 import { toReadableDuration } from "@utils/date"
 
+/**
+ * Config
+ */
+import { activeChainConfig } from "@config"
+
 const emit = defineEmits(["onClose"])
 const props = defineProps({
 	show: { type: Boolean },
@@ -71,7 +76,7 @@ const eventDuration = computed(() => toReadableDuration({ seconds: props.event.m
 
 					<div :class="$style.param">
 						<span><Icon name="money" size="12" />Total Value Locked</span>
-						<span>{{ event.totalValueLocked }} XTZ</span>
+						<span>{{ event.totalValueLocked }} {{activeChainConfig.nativeCurrency.symbol}}</span>
 					</div>
 
 					<div :class="$style.param">
@@ -109,7 +114,7 @@ const eventDuration = computed(() => toReadableDuration({ seconds: props.event.m
 				<div :class="$style.params">
 					<div :class="$style.param">
 						<span><Icon name="liquidity" size="12" /> Provided</span>
-						<span>{{ event.totalLiquidityProvided }} XTZ</span>
+						<span>{{ event.totalLiquidityProvided }} {{activeChainConfig.nativeCurrency.symbol}}</span>
 					</div>
 
 					<div :class="$style.param">
@@ -124,7 +129,7 @@ const eventDuration = computed(() => toReadableDuration({ seconds: props.event.m
 
 					<div :class="$style.param">
 						<span><Icon name="liquidity" size="12" /> Pool: Rise / Fall</span>
-						<span>{{ event.poolAboveEq }} XTZ / {{ event.poolBelow }} XTZ</span>
+						<span>{{ event.poolAboveEq }} {{activeChainConfig.nativeCurrency.symbol}} / {{ event.poolBelow }} {{activeChainConfig.nativeCurrency.symbol}}</span>
 					</div>
 				</div>
 			</Flex>

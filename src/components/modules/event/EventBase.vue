@@ -56,8 +56,8 @@ import { fetchEventById, fetchEventParticipants } from "@/api/events"
  */
 import { numberWithSymbol } from "@utils/amounts"
 import { capitalizeFirstLetter, toClipboard } from "@utils/misc"
-import { juster, analytics, currentNetwork } from "@sdk"
-import { supportedMarkets, verifiedMakers } from "~/services/config"
+import { flameWager, analytics, currentNetwork } from "@sdk"
+import { supportedMarkets, verifiedMakers } from "@config"
 
 /**
  * Store
