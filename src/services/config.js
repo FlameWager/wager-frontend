@@ -8,73 +8,50 @@ export const NETWORK_TYPE = import.meta.env.VITE_NETWORK_TYPE || 'testnet';
 export const chainConfig = {
   devnet: {
     id: 912559,
-    name: 'Flame Devnet',
+    name: 'Shadownet',
     network: 'devnet',
     nativeCurrency: {
-      name: 'nRIA',
-      symbol: 'nRIA',
+      name: 'XTZ',
+      symbol: 'XTZ',
       decimals: 18
     },
     rpcUrls: {
       default: {
-        http: ['https://rpc.evm.dusk-11.devnet.astria.org'],
-        webSocket: ['wss://rpc.evm.dusk-11.devnet.astria.org'],
+        http: ['https://node.shadownet.etherlink.com'],
+        webSocket: ['wss://node.shadownet.etherlink.com'],
       },
       public: {
-        http: ['https://rpc.evm.dusk-11.devnet.astria.org'],
-        webSocket: ['wss://rpc.evm.dusk-11.devnet.astria.org'],
+        http: ['https://node.shadownet.etherlink.com'],
+        webSocket: ['wss://node.shadownet.etherlink.com'],
       },
     },
     blockExplorers: {
-      default: { name: 'Flame Devnet Explorer', url: 'https://explorer.evm.dusk-11.devnet.astria.org' },
+      default: { name: 'Shadownet Explorer', url: 'https://shadownet.explorer.etherlink.com' },
     },
   },
   testnet: {
-    id: 16604737732183,
-    name: 'Flame Testnet',
+    id: 127823,
+    name: 'Etherlink Shadownet',
     network: 'testnet',
     nativeCurrency: {
-      name: 'TIA',
-      symbol: 'TIA',
+      name: 'Tezos',
+      symbol: 'XTZ',
       decimals: 18
     },
     rpcUrls: {
       default: {
-        http: ['https://rpc.flame.dawn-1.astria.org'],
-        webSocket: ['wss://rpc.flame.dawn-1.astria.org'],
+        http: ['https://node.shadownet.etherlink.com'],
+        webSocket: [],
       },
       public: {
-        http: ['https://rpc.flame.dawn-1.astria.org'],
-        webSocket: ['wss://rpc.flame.dawn-1.astria.org'],
+        http: ['https://node.shadownet.etherlink.com'],
+        webSocket: [],
       },
     },
     blockExplorers: {
-      default: { name: 'Flame Testnet Explorer', url: 'https://explorer.flame.dawn-1.astria.org' },
+      default: { name: 'Etherlink Shadownet Explorer', url: 'https://shadownet.explorer.etherlink.com' },
     },
   },
-  mainnet: {
-    id: 16604737732183,
-    name: 'Flame Mainnet',
-    network: 'mainnet',
-    nativeCurrency: {
-      name: 'TIA',
-      symbol: 'TIA',
-      decimals: 18
-    },
-    rpcUrls: {
-      default: {
-        http: ['https://rpc.flame.astria.org'],
-        webSocket: ['wss://rpc.flame.astria.org'],
-      },
-      public: {
-        http: ['https://rpc.flame.astria.org'],
-        webSocket: ['wss://rpc.flame.astria.org'],
-      },
-    },
-    blockExplorers: {
-      default: { name: 'Flame Mainnet Explorer', url: 'https://explorer.flame.astria.org' },
-    },
-  }
 };
 
 // Get the active chain config based on environment
@@ -88,17 +65,11 @@ export const rpcNodes = {
     code: "devnet" 
   },
   testnet: { 
-    url: chainConfig.testnet.rpcUrls[0],
+    url: chainConfig.testnet.rpcUrls.default,
     chainId: chainConfig.testnet.id,
     name: chainConfig.testnet.name,
     code: "testnet"
   },
-  mainnet: { 
-    url: chainConfig.mainnet.rpcUrls[0],
-    chainId: chainConfig.mainnet.id,
-    name: chainConfig.mainnet.name,
-    code: "mainnet"
-  }
 };
 
 // Get active RPC node based on environment
@@ -119,19 +90,15 @@ export const config = createConfig({
 });
 
 export const dipdup = {
-	mainnet: {
-		graphq: "https://api.juster.fi/v1/graphql",
-		ws: "wss://api.juster.fi/v1/graphql",
-	},
 	testnet: {
-		graphq: `https://api.ithacanet-pool.juster.fi/v1/graphql`,
-		ws: "wss://api.ithacanet-pool.juster.fi/v1/graphql",
+		graphq: "http://localhost:8080/v1/graphql", // Assuming local backend for now
+		ws: "ws://localhost:8080/v1/graphql",
 	},
 }
 
 export const supportedMarkets = {
 	"ETH-USD": { target: "Ethereum", description: "Ethereum / U.S. Dollar" },
-	"TIA-USD": { target: "Celestia", description: "Celestia / U.S. Dollar" },
+	"XTZ-USD": { target: "Tezos", description: "Tezos / U.S. Dollar" },
 	"BTC-USD": { target: "Bitcoin", description: "Bitcoin / U.S. Dollar" },
 }
 
@@ -166,6 +133,9 @@ export const verifiedMakers = {
 }
 
 export const contracts = {
-	testnet: "KT1Feq9iRBBhpSBdPF1Y7Sd7iJu7uLqqRf1A",
-	mainnet: "KT1D6XTy8oAHkUWdzuQrzySECCDMnANEchQq",
+	testnet: {
+		oracle: "0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A",
+		wager: "0xAE4CcBD81Ff31B4aE076563518Ddcf0a50671B42",
+		pool: "0xb0B468AC891feE379C9B432F74548a6C9773DB19",
+	},
 }

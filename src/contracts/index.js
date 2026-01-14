@@ -6,15 +6,15 @@ import ChainlinkPriceOracleABI from './abis/ChainlinkPriceOracle.json'
 const ADDRESSES = {
   // Development addresses (hardhat)
   development: {
-    JusterCore: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-    JusterPool: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
-    ChainlinkPriceOracle: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
+    JusterCore: '0xAE4CcBD81Ff31B4aE076563518Ddcf0a50671B42',
+    JusterPool: '0xb0B468AC891feE379C9B432F74548a6C9773DB19',
+    ChainlinkPriceOracle: '0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A'
   },
   // Testnet addresses
   testnet: {
-    JusterCore: '',
-    JusterPool: '',
-    ChainlinkPriceOracle: ''
+    JusterCore: '0xAE4CcBD81Ff31B4aE076563518Ddcf0a50671B42',
+    JusterPool: '0xb0B468AC891feE379C9B432F74548a6C9773DB19',
+    ChainlinkPriceOracle: '0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A'
   },
   // Mainnet addresses
   mainnet: {

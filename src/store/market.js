@@ -23,7 +23,7 @@ export const useMarketStore = defineStore({
 					quotes: [],
 					historyPrice: 0,
 				},
-				"TIA-USD": {
+				"XTZ-USD": {
 					events: [],
 					quotes: [],
 					historyPrice: 0,
