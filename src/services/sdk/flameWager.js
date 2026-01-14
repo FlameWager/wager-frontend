@@ -1,10 +1,17 @@
 /**
+ * FlameWager SDK
+ * Handles wallet connection, contract interactions, and GraphQL client for the MammothBet frontend
+ */
+
+/**
  * Vendor
  */
 import { computed, reactive } from "vue"
 import { ethers } from "ethers"
 import { switchChain } from "@wagmi/core"
-import { activeRpcNode, NETWORK_TYPE, activeChainConfig } from "@config"
+import { createClient, defaultExchanges, subscriptionExchange } from "@urql/vue"
+import { SubscriptionClient } from "subscriptions-transport-ws"
+import { activeRpcNode, NETWORK_TYPE, activeChainConfig, dipdup, contracts } from "@config"
 
 /**
  * Services.Constants
@@ -30,7 +37,8 @@ const flameWager = reactive({
   address: null,
   network: NETWORK_TYPE,
   chainId: activeRpcNode.chainId,
-  isConnected: false
+  isConnected: false,
+  gql: null, // GraphQL client
 })
 
 const currentNetwork = computed(() => {
@@ -38,51 +46,114 @@ const currentNetwork = computed(() => {
 })
 
 // Set default network from environment
-localStorage.activeNetwork = localStorage.activeNetwork || NETWORK_TYPE;
+if (typeof localStorage !== 'undefined') {
+  localStorage.activeNetwork = localStorage.activeNetwork || NETWORK_TYPE;
+  
+  // Validate "activeNetwork" (Integrity Repair)
+  if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(localStorage.activeNetwork)) {
+    localStorage.activeNetwork = NETWORK_TYPE;
+  }
+}
 
 /**
- * Validate "activeNetwork" (Integrity Repair)
+ * Initialize GraphQL client
  */
-if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(localStorage.activeNetwork)) {
-  localStorage.activeNetwork = NETWORK_TYPE;
+const initializeGraphQL = () => {
+  const networkKey = currentNetwork.value === 'mainnet' ? 'mainnet' : 'testnet'
+  const graphqlConfig = dipdup[networkKey]
+  
+  if (!graphqlConfig) {
+    console.warn("GraphQL configuration not found for network:", networkKey)
+    return
+  }
+
+  try {
+    // Create WebSocket subscription client
+    const subscriptionClient = new SubscriptionClient(
+      graphqlConfig.ws,
+      {
+        reconnect: true,
+        connectionParams: {},
+      }
+    )
+
+    // Create urql client with subscriptions
+    flameWager.gql = createClient({
+      url: graphqlConfig.graphq,
+      exchanges: [
+        ...defaultExchanges,
+        subscriptionExchange({
+          forwardSubscription: (operation) => subscriptionClient.request(operation),
+        }),
+      ],
+    })
+
+    console.log("✅ GraphQL client initialized:", graphqlConfig.graphq)
+  } catch (error) {
+    console.error("Failed to initialize GraphQL client:", error)
+    
+    // Fallback: Create client without subscriptions
+    flameWager.gql = createClient({
+      url: graphqlConfig.graphq,
+    })
+  }
+}
+
+/**
+ * Get contract addresses for current network
+ */
+const getContractAddresses = () => {
+  const networkKey = currentNetwork.value === 'mainnet' ? 'mainnet' : 'testnet'
+  return contracts[networkKey] || contracts.testnet
 }
 
 /**
  * Initialize contract instances
  */
 const initializeContracts = async () => {
-  const networkKey = currentNetwork.value
+  const addresses = getContractAddresses()
   
-  // Contract addresses should be defined in a constants file
-  const addresses = {
-    [Networks.DEVNET]: {
-      core: "0x123...devnet", // Replace with actual contract addresses
-      pool: "0x456...devnet",
-    },
-    [Networks.TESTNET]: {
-      core: "0x123...testnet",
-      pool: "0x456...testnet",
-    },
-    [Networks.MAINNET]: {
-      core: "0x123...mainnet",
-      pool: "0x456...mainnet",
-    }
+  if (!flameWager.signer) {
+    console.warn("Cannot initialize contracts: no signer available")
+    return
   }
-  
-  // Initialize core contract
-  flameWager.contracts.core = new ethers.Contract(
-    addresses[networkKey].core,
-    JusterCoreABI,
-    flameWager.signer
-  )
+
+  try {
+    // Initialize core (wager) contract
+    if (addresses.wager) {
+      flameWager.contracts.core = new ethers.Contract(
+        addresses.wager,
+        JusterCoreABI,
+        flameWager.signer
+      )
+    }
+
+    // Initialize pool contract
+    if (addresses.pool) {
+      flameWager.contracts.pools[addresses.pool] = new ethers.Contract(
+        addresses.pool,
+        JusterPoolABI,
+        flameWager.signer
+      )
+    }
+
+    console.log("✅ Contracts initialized")
+  } catch (error) {
+    console.error("Failed to initialize contracts:", error)
+  }
 }
 
 /**
  * Initialize pool contracts
  */
 const initPools = (pools) => {
+  if (!flameWager.signer) {
+    console.warn("Cannot initialize pools: no signer available")
+    return
+  }
+
   pools.forEach(pool => {
-    juster.contracts.pools[pool.address] = new ethers.Contract(
+    flameWager.contracts.pools[pool.address] = new ethers.Contract(
       pool.address,
       JusterPoolABI,
       flameWager.signer
@@ -94,7 +165,7 @@ const initPools = (pools) => {
  * Setup event listeners for wallet and network changes
  */
 const setupEventListeners = () => {
-  if (!window.ethereum) return
+  if (typeof window === 'undefined' || !window.ethereum) return
   
   // Handle account changes
   window.ethereum.on('accountsChanged', (accounts) => {
@@ -103,7 +174,7 @@ const setupEventListeners = () => {
       disconnect()
     } else {
       // User switched accounts
-      juster.address = accounts[0]
+      flameWager.address = accounts[0]
     }
   })
   
@@ -112,6 +183,40 @@ const setupEventListeners = () => {
     // Need to reload the page on chain change
     window.location.reload()
   })
+}
+
+/**
+ * Connect wallet
+ */
+const connect = async () => {
+  if (typeof window === 'undefined' || !window.ethereum) {
+    throw new Error("No wallet found. Please install MetaMask.")
+  }
+
+  try {
+    // Request accounts
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    
+    // Create provider and signer
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+
+    flameWager.provider = provider
+    flameWager.signer = signer
+    flameWager.address = accounts[0]
+    flameWager.isConnected = true
+
+    // Initialize contracts and GraphQL
+    await initializeContracts()
+    initializeGraphQL()
+    setupEventListeners()
+
+    console.log("✅ Wallet connected:", accounts[0])
+    return accounts[0]
+  } catch (error) {
+    console.error("Failed to connect wallet:", error)
+    throw error
+  }
 }
 
 /**
@@ -153,6 +258,9 @@ const switchNetwork = async (network, router) => {
   
   localStorage.activeNetwork = network
   
+  // Reinitialize GraphQL for new network
+  initializeGraphQL()
+  
   if (router) {
     router.push("/")
   }
@@ -169,10 +277,17 @@ const destroySubscription = (sub) => {
   }
 }
 
+// Initialize GraphQL client on load
+initializeGraphQL()
+
 export { 
   flameWager, 
   currentNetwork, 
+  connect,
+  disconnect,
   switchNetwork,
   initPools, 
-  destroySubscription 
+  destroySubscription,
+  initializeGraphQL,
+  getContractAddresses,
 }
