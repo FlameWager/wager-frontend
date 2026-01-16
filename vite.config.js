@@ -8,6 +8,7 @@ import nodePolyfills from "vite-plugin-node-stdlib-browser"
 const production = process.env.NODE_ENV === "production";
 
 const aliases = {
+	"~": path.resolve(__dirname, "./src"),
 	"@": path.resolve(__dirname, "./src"),
 	"@ui": path.resolve(__dirname, "./src/components/ui"),
 	"@base": path.resolve(__dirname, "./src/components/base"),
@@ -33,23 +34,23 @@ export default (ctx) => {
 			vue(),
 			!production &&
 			nodePolyfills({
-					include: [
-						"node_modules/**/*.js",
-						new RegExp("node_modules/.vite/.*js"),
-					],
-				}),
+				include: [
+					"node_modules/**/*.js",
+					new RegExp("node_modules/.vite/.*js"),
+				],
+			}),
 			...(process.env.STATS
 				? [
-						{
-							...visualizer({
-								filename: "./dist/stats.html",
-								gzipSize: true,
-								open: true,
-							}),
-							enforce: "post",
-							apply: "build",
-						},
-				  ]
+					{
+						...visualizer({
+							filename: "./dist/stats.html",
+							gzipSize: true,
+							open: true,
+						}),
+						enforce: "post",
+						apply: "build",
+					},
+				]
 				: []),
 			{
 				...replace({
@@ -66,19 +67,23 @@ export default (ctx) => {
 		],
 		build: {
 			rollupOptions: {
-			  plugins: [
-				// ↓ Needed for build
-				nodePolyfills()
-			  ]
+				plugins: [
+					// ↓ Needed for build
+					nodePolyfills()
+				]
 			},
 			// ↓ Needed for build if using WalletConnect and other providers
 			commonjsOptions: {
-			  transformMixedEsModules: true
+				transformMixedEsModules: true
 			}
 		},
 		define: {
 			global: "window",
 			"process.env": {},
+		},
+
+		optimizeDeps: {
+			exclude: ['shiki']
 		},
 
 		resolve: {
@@ -88,8 +93,7 @@ export default (ctx) => {
 
 				"@airgap/beacon-dapp": path.resolve(
 					__dirname,
-					`./node_modules/@airgap/beacon-dapp/dist/${
-						isBuild ? "esm" : "cjs"
+					`./node_modules/@airgap/beacon-dapp/dist/${isBuild ? "esm" : "cjs"
 					}/index.js`,
 				),
 			},

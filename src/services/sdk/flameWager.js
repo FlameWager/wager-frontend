@@ -9,7 +9,12 @@
 import { computed, reactive } from "vue"
 import { ethers } from "ethers"
 import { switchChain } from "@wagmi/core"
-import { createClient, defaultExchanges, subscriptionExchange } from "@urql/vue"
+import { createClient } from "@urql/vue"
+import {
+  cacheExchange,
+  fetchExchange,
+  subscriptionExchange,
+} from "@urql/core"
 import { SubscriptionClient } from "subscriptions-transport-ws"
 import { activeRpcNode, NETWORK_TYPE, activeChainConfig, dipdup, contracts } from "@config"
 
@@ -48,7 +53,7 @@ const currentNetwork = computed(() => {
 // Set default network from environment
 if (typeof localStorage !== 'undefined') {
   localStorage.activeNetwork = localStorage.activeNetwork || NETWORK_TYPE;
-  
+
   // Validate "activeNetwork" (Integrity Repair)
   if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(localStorage.activeNetwork)) {
     localStorage.activeNetwork = NETWORK_TYPE;
@@ -61,7 +66,7 @@ if (typeof localStorage !== 'undefined') {
 const initializeGraphQL = () => {
   const networkKey = currentNetwork.value === 'mainnet' ? 'mainnet' : 'testnet'
   const graphqlConfig = dipdup[networkKey]
-  
+
   if (!graphqlConfig) {
     console.warn("GraphQL configuration not found for network:", networkKey)
     return
@@ -81,7 +86,8 @@ const initializeGraphQL = () => {
     flameWager.gql = createClient({
       url: graphqlConfig.graphq,
       exchanges: [
-        ...defaultExchanges,
+        cacheExchange,
+        fetchExchange,
         subscriptionExchange({
           forwardSubscription: (operation) => subscriptionClient.request(operation),
         }),
@@ -91,7 +97,7 @@ const initializeGraphQL = () => {
     console.log("✅ GraphQL client initialized:", graphqlConfig.graphq)
   } catch (error) {
     console.error("Failed to initialize GraphQL client:", error)
-    
+
     // Fallback: Create client without subscriptions
     flameWager.gql = createClient({
       url: graphqlConfig.graphq,
@@ -112,7 +118,7 @@ const getContractAddresses = () => {
  */
 const initializeContracts = async () => {
   const addresses = getContractAddresses()
-  
+
   if (!flameWager.signer) {
     console.warn("Cannot initialize contracts: no signer available")
     return
@@ -166,7 +172,7 @@ const initPools = (pools) => {
  */
 const setupEventListeners = () => {
   if (typeof window === 'undefined' || !window.ethereum) return
-  
+
   // Handle account changes
   window.ethereum.on('accountsChanged', (accounts) => {
     if (accounts.length === 0) {
@@ -177,7 +183,7 @@ const setupEventListeners = () => {
       flameWager.address = accounts[0]
     }
   })
-  
+
   // Handle chain changes
   window.ethereum.on('chainChanged', (chainIdHex) => {
     // Need to reload the page on chain change
@@ -196,7 +202,7 @@ const connect = async () => {
   try {
     // Request accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-    
+
     // Create provider and signer
     const provider = new ethers.BrowserProvider(window.ethereum)
     const signer = await provider.getSigner()
@@ -236,7 +242,7 @@ const disconnect = () => {
  */
 const switchNetwork = async (network, router) => {
   if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(network)) return
-  
+
   try {
     // Try to switch to the network
     await switchChain(config, {
@@ -255,12 +261,12 @@ const switchNetwork = async (network, router) => {
       }
     }
   }
-  
+
   localStorage.activeNetwork = network
-  
+
   // Reinitialize GraphQL for new network
   initializeGraphQL()
-  
+
   if (router) {
     router.push("/")
   }
@@ -280,13 +286,13 @@ const destroySubscription = (sub) => {
 // Initialize GraphQL client on load
 initializeGraphQL()
 
-export { 
-  flameWager, 
-  currentNetwork, 
+export {
+  flameWager,
+  currentNetwork,
   connect,
   disconnect,
   switchNetwork,
-  initPools, 
+  initPools,
   destroySubscription,
   initializeGraphQL,
   getContractAddresses,

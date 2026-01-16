@@ -1,7 +1,7 @@
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 
 /**
  * Models
@@ -16,8 +16,7 @@ export const fetchQuotesByMarket = async ({ id, limit, offset }) => {
 	try {
 		if (!id || !limit)
 			throw new Error(
-				`${
-					(id == undefined && "ID") || (limit == undefined && "limit")
+				`${(id == undefined && "ID") || (limit == undefined && "limit")
 				} is required`,
 			)
 		if (typeof id !== "number") throw new Error("ID must be a Number")

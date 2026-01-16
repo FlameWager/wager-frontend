@@ -9,7 +9,7 @@ export const getCurrencyIcon = (name) => {
 		case "TIA":
 			return new URL(`../../assets/symbols/tia.png`, import.meta.url).href
 		case "XTZ":
-			return new URL(`../../assets/symbols/tz.png`, import.meta.url).href
+			return new URL(`../../assets/symbols/xtz.png`, import.meta.url).href
 		case "ETH":
 			return new URL(`../../assets/symbols/eth.png`, import.meta.url).href
 		case "BTC":

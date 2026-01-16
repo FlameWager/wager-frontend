@@ -91,7 +91,7 @@ export const config = createConfig({
 
 export const dipdup = {
 	testnet: {
-		graphq: "http://localhost:8080/v1/graphql", // Assuming local backend for now
+		graphq: "http://localhost:8080/v1/graphql", 
 		ws: "ws://localhost:8080/v1/graphql",
 	},
 }
