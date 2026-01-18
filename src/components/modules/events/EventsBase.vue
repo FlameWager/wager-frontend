@@ -21,7 +21,7 @@ import { verifiedMakers } from "@config"
 /**
  * API
  */
-import { fetchEventsByStatus } from "@/api/events"
+import { fetchEventsByStatus, subscribeToNewEvents } from "@/api/events"
 
 /**
  * UI
@@ -379,24 +379,19 @@ onMounted(async () => {
 	]
 
 	// Sub to New Events
-	subscription.value = await flameWager.gql
-		.subscription({
-			event: [
-				{
-					where: {
-						status: { _eq: "NEW" },
-					},
-				},
-				{
-					...eventModel,
-				},
-			],
-		})
-		.subscribe({
-			next: (data) => {
-				const { event: newEvents } = data
+	try {
+		subscription.value = subscribeToNewEvents(
+			(incomingEvents) => {
+				if (!Array.isArray(marketStore.events)) {
+					marketStore.events = []
+				}
 
-				newEvents.forEach((newEvent) => {
+				incomingEvents.forEach((newEvent) => {
+					if (!newEvent || !newEvent.id) {
+						return
+					}
+
+					// Prevent duplicates
 					if (
 						marketStore.events.some(
 							(event) => newEvent.id == event.id,
@@ -408,8 +403,12 @@ onMounted(async () => {
 					marketStore.events.push(newEvent)
 				})
 			},
-			error: console.error,
-		})
+			{ limit: 10 }
+		)
+	} catch (error) {
+		console.error("Error setting up new events subscription:", error)
+		subscription.value = null
+	}
 })
 
 onBeforeUnmount(() => {
@@ -417,11 +416,7 @@ onBeforeUnmount(() => {
 })
 
 onUnmounted(() => {
-	if (
-		subscription.value &&
-		Object.prototype.hasOwnProperty.call(subscription.value, "_state") &&
-		!subscription.value?.closed
-	) {
+	if (subscription.value && typeof subscription.value.unsubscribe === 'function') {
 		subscription.value.unsubscribe()
 	}
 })

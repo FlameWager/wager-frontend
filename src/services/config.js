@@ -90,9 +90,13 @@ export const config = createConfig({
 });
 
 export const dipdup = {
+  mainnet: {
+    graphql: "http://localhost:8081/v1/graphql",
+    ws: "ws://localhost:8081/v1/graphql",
+  },
 	testnet: {
-		graphq: "http://localhost:8080/v1/graphql", 
-		ws: "ws://localhost:8080/v1/graphql",
+		graphql: "http://localhost:8081/v1/graphql", 
+		ws: "ws://localhost:8081/v1/graphql",
 	},
 }
 

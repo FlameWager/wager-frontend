@@ -15,7 +15,7 @@ import {
   fetchExchange,
   subscriptionExchange,
 } from "@urql/core"
-import { SubscriptionClient } from "subscriptions-transport-ws"
+import { createClient as createWSClient } from 'graphql-ws';
 import { activeRpcNode, NETWORK_TYPE, activeChainConfig, dipdup, contracts } from "@config"
 
 /**
@@ -73,34 +73,39 @@ const initializeGraphQL = () => {
   }
 
   try {
-    // Create WebSocket subscription client
-    const subscriptionClient = new SubscriptionClient(
-      graphqlConfig.ws,
-      {
-        reconnect: true,
-        connectionParams: {},
-      }
-    )
+    const wsClient = createWSClient({
+      url: graphqlConfig.ws,
+    });
 
-    // Create urql client with subscriptions
     flameWager.gql = createClient({
-      url: graphqlConfig.graphq,
+      url: graphqlConfig.graphql,
       exchanges: [
         cacheExchange,
-        fetchExchange,
         subscriptionExchange({
-          forwardSubscription: (operation) => subscriptionClient.request(operation),
+          forwardSubscription: (request) => {
+            const input = { ...request, query: request.query || '' }
+            return {
+              subscribe: (sink) => {
+                const unsubscribe = wsClient.subscribe(input, sink)
+                return { unsubscribe }
+              },
+            }
+          },
         }),
+        fetchExchange,
       ],
-    })
+      fetchOptions: {
+        method: "POST",
+      },
+    });
 
-    console.log("✅ GraphQL client initialized:", graphqlConfig.graphq)
+    console.log("✅ GraphQL client initialized:", graphqlConfig.graphql)
   } catch (error) {
     console.error("Failed to initialize GraphQL client:", error)
 
     // Fallback: Create client without subscriptions
     flameWager.gql = createClient({
-      url: graphqlConfig.graphq,
+      url: graphqlConfig.graphql,
     })
   }
 }
