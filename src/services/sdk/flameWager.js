@@ -26,8 +26,8 @@ import { Networks } from "@/services/constants/networks"
 /**
  * Contracts and ABIs
  */
-import JusterCoreABI from "@/contracts/abis/JusterCore.json"
-import JusterPoolABI from "@/contracts/abis/JusterPool.json"
+import wagerABI from "@/contracts/abis/wager.json"
+import poolABI from "@/contracts/abis/pool.json"
 
 /**
  * Store
@@ -134,7 +134,7 @@ const initializeContracts = async () => {
     if (addresses.wager) {
       flameWager.contracts.core = new ethers.Contract(
         addresses.wager,
-        JusterCoreABI,
+        wagerABI,
         flameWager.signer
       )
     }
@@ -143,7 +143,7 @@ const initializeContracts = async () => {
     if (addresses.pool) {
       flameWager.contracts.pools[addresses.pool] = new ethers.Contract(
         addresses.pool,
-        JusterPoolABI,
+        poolABI,
         flameWager.signer
       )
     }
@@ -166,7 +166,7 @@ const initPools = (pools) => {
   pools.forEach(pool => {
     flameWager.contracts.pools[pool.address] = new ethers.Contract(
       pool.address,
-      JusterPoolABI,
+      poolABI,
       flameWager.signer
     )
   })

@@ -58,13 +58,13 @@ export const chainConfig = {
 export const activeChainConfig = chainConfig[NETWORK_TYPE];
 
 export const rpcNodes = {
-  devnet: { 
+  devnet: {
     url: chainConfig.devnet.rpcUrls.default,
     chainId: chainConfig.devnet.id,
     name: chainConfig.devnet.name,
-    code: "devnet" 
+    code: "devnet"
   },
-  testnet: { 
+  testnet: {
     url: chainConfig.testnet.rpcUrls.default,
     chainId: chainConfig.testnet.id,
     name: chainConfig.testnet.name,
@@ -94,52 +94,52 @@ export const dipdup = {
     graphql: "http://localhost:8081/v1/graphql",
     ws: "ws://localhost:8081/v1/graphql",
   },
-	testnet: {
-		graphql: "http://localhost:8081/v1/graphql", 
-		ws: "ws://localhost:8081/v1/graphql",
-	},
+  testnet: {
+    graphql: "http://localhost:8081/v1/graphql",
+    ws: "ws://localhost:8081/v1/graphql",
+  },
 }
 
 export const supportedMarkets = {
-	"ETH-USD": { target: "Ethereum", description: "Ethereum / U.S. Dollar" },
-	"XTZ-USD": { target: "Tezos", description: "Tezos / U.S. Dollar" },
-	"BTC-USD": { target: "Bitcoin", description: "Bitcoin / U.S. Dollar" },
+  "ETH-USD": { target: "Ethereum", description: "Ethereum / U.S. Dollar" },
+  "XTZ-USD": { target: "Tezos", description: "Tezos / U.S. Dollar" },
+  "BTC-USD": { target: "Bitcoin", description: "Bitcoin / U.S. Dollar" },
 }
 
 export const sanity = {
-	id: "2tokh3zd",
+  id: "2tokh3zd",
 }
 
 export const verifiedMakers = {
-	testnet: [
-		"tz1RVJBJDxohFBHLK2hw6JTrKbz6oLSLERU3",
-		"KT1T4zTEZQLbFeKoR8sRihozyS4DAnyicYE3",
-		"KT1M6fueToCaYBTeG25XZEFCa7YXcNDMn12x",
-		"KT19XF9XW5osWpkQAZnpQkdyJsKfPuskk7JT",
-		"KT1Jte8DZvUghZ9RE2Lis87tSA3GsRQqNvMC",
-		"KT1AEzrdJvtd2TkLGhrQokhxkVSxUN4dbsot",
-		"KT1FkBgjipxkupB9oXjmvKTgzdQAdHsPPfpp",
-		"KT1DNt8ZE7HifCA6N7XiJtDBxhkMc3Bpaevm",
-		"KT1JcMF3L3FkK3rszRGGxyT4tQt4JeCb7RWC",
-		"KT1XELoPAA945ExHXS9mfG1Tx3gDUn7ph9cp",
-		"KT1TNE38c5BFc9hXXAGBJ3fmXCPtHKV3Ng81",
-		"KT1MRHBX9DoLYsmN58ediuARpzH4QdgMAQz8",
-	],
-	mainnet: [
-		"tz1h5frRwDbJMGyTPntdwMC8i745q2Z1fzyF",
-		"KT1Pq4GZ8E5ATLJdAmy7ypwnNzxhjmTQwtzP",
-		"KT1KWxEUXmhoSqv8qjzwRQEVmhHGFTSVewAt",
-		"KT1WGwGfW2Wx4EMJ2DNLnvoNEYCKA6GggQhb",
-		"KT1JKiMQWE8hcSGq8j89mYDEY4DLpTE4vEaD",
-		"KT1VWjtgFCM1bs3QRcqHcP31dowjDgdgVtxR",
-		"KT1AatPqLrUumRZz4FRC9nG1acTvyizeQ4ni",
-	],
+  testnet: [
+    "tz1RVJBJDxohFBHLK2hw6JTrKbz6oLSLERU3",
+    "KT1T4zTEZQLbFeKoR8sRihozyS4DAnyicYE3",
+    "KT1M6fueToCaYBTeG25XZEFCa7YXcNDMn12x",
+    "KT19XF9XW5osWpkQAZnpQkdyJsKfPuskk7JT",
+    "KT1Jte8DZvUghZ9RE2Lis87tSA3GsRQqNvMC",
+    "KT1AEzrdJvtd2TkLGhrQokhxkVSxUN4dbsot",
+    "KT1FkBgjipxkupB9oXjmvKTgzdQAdHsPPfpp",
+    "KT1DNt8ZE7HifCA6N7XiJtDBxhkMc3Bpaevm",
+    "KT1JcMF3L3FkK3rszRGGxyT4tQt4JeCb7RWC",
+    "KT1XELoPAA945ExHXS9mfG1Tx3gDUn7ph9cp",
+    "KT1TNE38c5BFc9hXXAGBJ3fmXCPtHKV3Ng81",
+    "KT1MRHBX9DoLYsmN58ediuARpzH4QdgMAQz8",
+  ],
+  mainnet: [
+    "tz1h5frRwDbJMGyTPntdwMC8i745q2Z1fzyF",
+    "KT1Pq4GZ8E5ATLJdAmy7ypwnNzxhjmTQwtzP",
+    "KT1KWxEUXmhoSqv8qjzwRQEVmhHGFTSVewAt",
+    "KT1WGwGfW2Wx4EMJ2DNLnvoNEYCKA6GggQhb",
+    "KT1JKiMQWE8hcSGq8j89mYDEY4DLpTE4vEaD",
+    "KT1VWjtgFCM1bs3QRcqHcP31dowjDgdgVtxR",
+    "KT1AatPqLrUumRZz4FRC9nG1acTvyizeQ4ni",
+  ],
 }
 
 export const contracts = {
-	testnet: {
-		oracle: "0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A",
-		wager: "0xAE4CcBD81Ff31B4aE076563518Ddcf0a50671B42",
-		pool: "0xb0B468AC891feE379C9B432F74548a6C9773DB19",
-	},
+  testnet: {
+    oracle: "0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A",
+    wager: "0xc786c862682F3CAa00f9460e5f4F672444aBA41c",
+    pool: "0xeE43DaC2ED8BD96fFd4245FB4052d77808a525F0",
+  },
 }

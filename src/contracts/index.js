@@ -6,14 +6,14 @@ import ChainlinkPriceOracleABI from './abis/ChainlinkPriceOracle.json'
 const ADDRESSES = {
   // Development addresses (hardhat)
   development: {
-    JusterCore: '0xAE4CcBD81Ff31B4aE076563518Ddcf0a50671B42',
-    JusterPool: '0xb0B468AC891feE379C9B432F74548a6C9773DB19',
+    JusterCore: '0xc786c862682F3CAa00f9460e5f4F672444aBA41c',
+    JusterPool: '0xeE43DaC2ED8BD96fFd4245FB4052d77808a525F0',
     ChainlinkPriceOracle: '0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A'
   },
   // Testnet addresses
   testnet: {
-    JusterCore: '0xAE4CcBD81Ff31B4aE076563518Ddcf0a50671B42',
-    JusterPool: '0xb0B468AC891feE379C9B432F74548a6C9773DB19',
+    JusterCore: '0xc786c862682F3CAa00f9460e5f4F672444aBA41c',
+    JusterPool: '0xeE43DaC2ED8BD96fFd4245FB4052d77808a525F0',
     ChainlinkPriceOracle: '0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A'
   },
   // Mainnet addresses
@@ -42,14 +42,14 @@ export const getContractInstance = (contractName, provider) => {
   const ethers = require('ethers')
   const abi = ABIs[contractName]
   const address = CONTRACT_ADDRESSES[contractName]
-  
+
   if (!abi) {
     throw new Error(`ABI for ${contractName} not found`)
   }
-  
+
   if (!address) {
     throw new Error(`Address for ${contractName} not found on ${NETWORK_ENV} network`)
   }
-  
+
   return new ethers.Contract(address, abi, provider)
 } 
