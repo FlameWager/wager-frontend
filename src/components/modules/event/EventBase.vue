@@ -456,9 +456,7 @@ onMounted(async () => {
 
 	/** Participants */
 	if (event.value) {
-		const eventParticipants = await fetchEventParticipants({
-			id: event.value.id,
-		})
+		const eventParticipants = await fetchEventParticipants(event.value.id)
 		participants.value = eventParticipants?.bets?.length || 0
 	}
 })

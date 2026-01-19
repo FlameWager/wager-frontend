@@ -11,7 +11,7 @@ import { fetchEventTVL } from "@/api/quotes"
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 
 export default defineComponent({
 	name: "EventTVLChart",

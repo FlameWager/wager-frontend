@@ -18,7 +18,7 @@ import { Dropdown, DropdownItem, DropdownTitle, DropdownDivider } from "@ui/Drop
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 import { toClipboard, getCurrencyIcon, shorten, parsePoolName } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
 

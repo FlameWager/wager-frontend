@@ -17,7 +17,7 @@ import LargeBanner from "@ui/LargeBanner.vue"
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 import { getCurrencyIcon, parsePoolName } from "@utils/misc"
 import { numberWithSymbol, truncate } from "@utils/amounts"
 import { supportedMarkets } from "~/services/config"

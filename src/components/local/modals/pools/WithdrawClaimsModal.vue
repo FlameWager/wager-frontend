@@ -17,7 +17,7 @@ import Pagination from "@ui/Pagination.vue"
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 import { shorten } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
 

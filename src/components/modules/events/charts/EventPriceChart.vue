@@ -13,7 +13,7 @@ import { fetchQuoteByRange } from "@/api/quotes"
  */
 import { prepareQuotesForD3 } from "@utils/quotes"
 import { disaggregate } from "@utils/amounts"
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 
 /**
  * UI

@@ -30,7 +30,7 @@ import WithdrawClaimsModal from "@local/modals/pools/WithdrawClaimsModal.vue"
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 import { parsePoolName } from "@utils/misc"
 
 /**

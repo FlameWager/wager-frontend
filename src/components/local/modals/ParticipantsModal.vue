@@ -25,7 +25,7 @@ const props = defineProps({
 const users = ref([])
 
 onMounted(async () => {
-	users.value = await fetchEventParticipants({ id: props.event.id })
+	users.value = await fetchEventParticipants(props.event.id)
 })
 </script>
 

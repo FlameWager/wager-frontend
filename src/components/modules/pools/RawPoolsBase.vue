@@ -15,7 +15,7 @@ import Checkbox from "@ui/Checkbox.vue"
 /**
  * Services
  */
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 
 /**
  * Models

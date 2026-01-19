@@ -35,7 +35,7 @@ import TimelineModal from "@local/modals/pools/TimelineModal.vue"
  * Services
  */
 import { flags, updateFlag } from "@/services/flags"
-import { juster } from "@sdk"
+import { flameWager as juster } from "@sdk"
 
 /**
  * Models
