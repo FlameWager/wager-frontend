@@ -342,3 +342,25 @@ export const NEW_EVENTS_SUBSCRIPTION = `
     }
   }
 `
+
+/**
+ * Subscribe to user position on event
+ */
+export const USER_POSITION_SUBSCRIPTION = `
+  subscription UserPositionSubscription($eventId: bigint!, $userAddress: String!) {
+    bet(
+      where: {
+        event: { id: { _eq: $eventId } }
+        user: { address: { _eq: $userAddress } }
+      }
+    ) {
+      id
+      betType
+      amount
+      minimalWinAmount
+      payout
+      isWinner
+      timestamp
+    }
+  }
+`

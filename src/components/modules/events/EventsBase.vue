@@ -272,7 +272,7 @@ const filteredEvents = computed(() => {
 
 		if (periods.length) {
 			events = events.filter((event) =>
-				periods.includes(event.measurePeriod),
+				periods.includes(Number(event.measurePeriod)),
 			)
 		} else {
 			events = []
@@ -292,67 +292,67 @@ const filteredEvents = computed(() => {
 		)
 	}
 
-	if (filters.value.advanced.participants.length) {
-		events = events.filter((event) => {
-			const hasBet = event.bets
-				.map((bet) => bet.userId)
-				.some((userId) =>
-					filters.value.advanced.participants.includes(userId),
-				)
-			const hasDeposit = event.deposits
-				.map((deposit) => deposit.userId)
-				.some((userId) =>
-					filters.value.advanced.participants.includes(userId),
-				)
+	// if (filters.value.advanced.participants.length) {
+	// 	events = events.filter((event) => {
+	// 		const hasBet = event.bets
+	// 			.map((bet) => bet.userId)
+	// 			.some((userId) =>
+	// 				filters.value.advanced.participants.includes(userId),
+	// 			)
+	// 		const hasDeposit = event.deposits
+	// 			.map((deposit) => deposit.userId)
+	// 			.some((userId) =>
+	// 				filters.value.advanced.participants.includes(userId),
+	// 			)
 
-			return hasBet || hasDeposit
-		})
-	}
+	// 		return hasBet || hasDeposit
+	// 	})
+	// }
 
-	/** Filter by Author */
-	if (!filters.value.author[0].active) {
-		/** flameWager */
-		events = events.filter(
-			(event) =>
-				!verifiedMakers[currentNetwork.value].includes(event.creatorId),
-		)
-	}
-	if (!filters.value.author[1].active) {
-		/** other users */
-		events = events.filter((event) =>
-			verifiedMakers[currentNetwork.value].includes(event.creatorId),
-		)
-	}
+	// /** Filter by Author */
+	// if (!filters.value.author[0].active) {
+	// 	/** flameWager */
+	// 	events = events.filter(
+	// 		(event) =>
+	// 			!verifiedMakers[currentNetwork.value].includes(event.creatorId),
+	// 	)
+	// }
+	// if (!filters.value.author[1].active) {
+	// 	/** other users */
+	// 	events = events.filter((event) =>
+	// 		verifiedMakers[currentNetwork.value].includes(event.creatorId),
+	// 	)
+	// }
 
-	/** Filter by Misc */
-	if (filters.value.misc.startingToday.active) {
-		events = events.filter((event) =>
-			DateTime.fromISO(event.betsCloseTime).hasSame(
-				DateTime.local(),
-				"day",
-			),
-		)
-	}
+	// /** Filter by Misc */
+	// if (filters.value.misc.startingToday.active) {
+	// 	events = events.filter((event) =>
+	// 		DateTime.fromISO(event.betsCloseTime).hasSame(
+	// 			DateTime.local(),
+	// 			"day",
+	// 		),
+	// 	)
+	// }
 
-	if (filters.value.misc.moreThan.active) {
-		events = events.filter((event) => {
-			let participants = [
-				...event.bets.map((bet) => bet.userId),
-				...event.deposits.map((deposit) => deposit.userId),
-			]
+	// if (filters.value.misc.moreThan.active) {
+	// 	events = events.filter((event) => {
+	// 		let participants = [
+	// 			...event.bets.map((bet) => bet.userId),
+	// 			...event.deposits.map((deposit) => deposit.userId),
+	// 		]
 
-			/** remove duplicates */
-			participants = [...new Set(participants)]
+	// 		/** remove duplicates */
+	// 		participants = [...new Set(participants)]
 
-			return participants.length > 1
-		})
-	}
+	// 		return participants.length > 1
+	// 	})
+	// }
 
-	if (!filters.value.misc.targetDynamics.active) {
-		events = events.filter((event) => event.targetDynamics == 1)
-	} else {
-		events = events.filter((event) => event.targetDynamics !== 1)
-	}
+	// if (!filters.value.misc.targetDynamics.active) {
+	// 	events = events.filter((event) => event.targetDynamics == 1)
+	// } else {
+	// 	events = events.filter((event) => event.targetDynamics !== 1)
+	// }
 
 	return events
 })

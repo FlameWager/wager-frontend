@@ -112,27 +112,10 @@ export const sanity = {
 
 export const verifiedMakers = {
   testnet: [
-    "tz1RVJBJDxohFBHLK2hw6JTrKbz6oLSLERU3",
-    "KT1T4zTEZQLbFeKoR8sRihozyS4DAnyicYE3",
-    "KT1M6fueToCaYBTeG25XZEFCa7YXcNDMn12x",
-    "KT19XF9XW5osWpkQAZnpQkdyJsKfPuskk7JT",
-    "KT1Jte8DZvUghZ9RE2Lis87tSA3GsRQqNvMC",
-    "KT1AEzrdJvtd2TkLGhrQokhxkVSxUN4dbsot",
-    "KT1FkBgjipxkupB9oXjmvKTgzdQAdHsPPfpp",
-    "KT1DNt8ZE7HifCA6N7XiJtDBxhkMc3Bpaevm",
-    "KT1JcMF3L3FkK3rszRGGxyT4tQt4JeCb7RWC",
-    "KT1XELoPAA945ExHXS9mfG1Tx3gDUn7ph9cp",
-    "KT1TNE38c5BFc9hXXAGBJ3fmXCPtHKV3Ng81",
-    "KT1MRHBX9DoLYsmN58ediuARpzH4QdgMAQz8",
+    "0x6f8c8eb1d40cd2b9918334e7e82db9bc9df4e8b8",
   ],
   mainnet: [
-    "tz1h5frRwDbJMGyTPntdwMC8i745q2Z1fzyF",
-    "KT1Pq4GZ8E5ATLJdAmy7ypwnNzxhjmTQwtzP",
-    "KT1KWxEUXmhoSqv8qjzwRQEVmhHGFTSVewAt",
-    "KT1WGwGfW2Wx4EMJ2DNLnvoNEYCKA6GggQhb",
-    "KT1JKiMQWE8hcSGq8j89mYDEY4DLpTE4vEaD",
-    "KT1VWjtgFCM1bs3QRcqHcP31dowjDgdgVtxR",
-    "KT1AatPqLrUumRZz4FRC9nG1acTvyizeQ4ni",
+    "0x6f8c8eb1d40cd2b9918334e7e82db9bc9df4e8b8",
   ],
 }
 

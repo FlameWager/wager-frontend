@@ -49,7 +49,7 @@ import { useMarket } from "@/composable/market"
 /**
  * API
  */
-import { fetchEventById, fetchEventParticipants } from "@/api/events"
+import { fetchEventById, fetchEventParticipants, subscribeToEvent, subscribeToUserPosition } from "@/api/events"
 
 /**
  * Services
@@ -123,17 +123,19 @@ const getEvent = async () => {
 	if (event.value) return
 
 	const { id: eventId } = router.currentRoute.value.params
-	event.value = await fetchEventById({ id: eventId })
-
-	/** meta */
-	meta.meta.title = `${supportedMarkets[event.value.currencyPair.symbol].target} - Price Event (#${numberWithSymbol(
-		event.value.id,
-		",",
-	)})`
+	event.value = await fetchEventById(eventId)
 
 	if (!event.value) {
 		router.push("/events")
 	} else {
+		/** meta - only set if event exists and has valid data */
+		if (event.value.currencyPair?.symbol && supportedMarkets[event.value.currencyPair.symbol]) {
+			meta.meta.title = `${supportedMarkets[event.value.currencyPair.symbol].target} - Price Event (#${numberWithSymbol(
+				event.value.id,
+				",",
+			)})`
+		}
+		
 		/** breadcrumbs */
 		breadcrumbs.push({
 			name: `Event #${numberWithSymbol(event.value.id, ",")}`,
@@ -394,6 +396,8 @@ const copy = (target) => {
 }
 
 watch(event, async () => {
+	if (!event.value) return 
+	
 	await getEvent()
 
 	/** Manage Favicon */
@@ -401,7 +405,7 @@ watch(event, async () => {
 	const isDark = window.matchMedia("(prefers-color-scheme: dark)")
 	const baseFavicon = `/favicon_${isDark.matches ? "dark" : "light"}`
 
-	switch (event.value.status) {
+	switch (event.value?.status) {
 		case "NEW":
 			favicon.href = `${baseFavicon}__new.svg`
 			break
@@ -425,71 +429,47 @@ onMounted(async () => {
 	startStartCountdown()
 	startFinishCountdown()
 
-	/** Subscribe to event, TODO: refactor */
-	subToEvent.value = await juster.gql
-		.subscription({
-			event: [
-				{
-					where: { id: { _eq: event.value.id } },
-				},
-				{
-					...eventModel,
-				},
-			],
+	// Subscribe to event updates using the EVM SDK API
+	if (event.value) {
+		subToEvent.value = subscribeToEvent(event.value.id, (updatedEvent) => {
+			// Clear pending bet on update
+			if (event.value?.bets?.length !== updatedEvent?.bets?.length) {
+				pendingBet.value = null
+			}
+			event.value = updatedEvent
 		})
-		.subscribe({
-			next: (data) => {
-				const { event: newEvent } = data
 
-				/** Clear pending bet on update */
-				if (event.value.bets.length !== newEvent[0].bets.length) {
-					pendingBet.value = null
+		// Subscribe to user position updates
+		if (accountStore.pkh) {
+			subToDeposits.value = subscribeToUserPosition(
+				event.value.id,
+				accountStore.pkh,
+				(bets) => {
+					// Update user position from subscription data
+					if (bets && bets.length > 0) {
+						userPosition.value = bets[0]
+					}
 				}
-
-				event.value = newEvent[0]
-			},
-			error: console.error,
-		})
-
-	/** Subscribe to deposits */
-	subToDeposits.value = await juster.gql
-		.subscription({
-			position: [
-				{
-					where: {
-						eventId: { _eq: event.value.id },
-						userId: { _eq: accountStore.pkh },
-					},
-				},
-				{
-					id: true,
-					withdrawn: true,
-					liquidityProvidedAboveEq: true,
-					liquidityProvidedBelow: true,
-					value: true,
-					userId: true,
-				},
-			],
-		})
-		.subscribe({
-			next: ({ position }) => {
-				userPosition.value = position[0]
-			},
-			error: console.error,
-		})
+			)
+		}
+	}
 
 	/** Participants */
-	const eventParticipants = await fetchEventParticipants({
-		id: event.value.id,
-	})
-	participants.value = eventParticipants.length
+	if (event.value) {
+		const eventParticipants = await fetchEventParticipants({
+			id: event.value.id,
+		})
+		participants.value = eventParticipants?.bets?.length || 0
+	}
 })
 
 onUnmounted(() => {
-	if (Object.prototype.hasOwnProperty.call(subToEvent.value, "_state") && !subToEvent.value?.closed) {
+	// Clean up event subscription
+	if (subToEvent.value?.unsubscribe) {
 		subToEvent.value.unsubscribe()
 	}
-	if (Object.prototype.hasOwnProperty.call(subToDeposits.value, "_state") && !subToDeposits.value?.closed) {
+	// Clean up deposits subscription (when implemented)
+	if (subToDeposits.value?.unsubscribe) {
 		subToDeposits.value.unsubscribe()
 	}
 

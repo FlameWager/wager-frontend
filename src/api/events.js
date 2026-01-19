@@ -1,7 +1,7 @@
 import { dipdup } from "@/services/config"
 import { currentNetwork, flameWager } from "@/services/sdk"
 import { pipe, subscribe } from "wonka"
-import { EVENTS_BY_STATUS_QUERY, EVENT_BY_ID_QUERY, EVENTS_BY_MARKET_QUERY, TOP_EVENTS_QUERY, EVENT_BETS_QUERY, EVENT_LIQUIDITY_QUERY, USER_EVENTS_QUERY, NEW_EVENTS_SUBSCRIPTION, EVENT_SUBSCRIPTION } from "@/graphql/events"
+import { EVENTS_BY_STATUS_QUERY, EVENT_BY_ID_QUERY, EVENTS_BY_MARKET_QUERY, TOP_EVENTS_QUERY, EVENT_BETS_QUERY, EVENT_LIQUIDITY_QUERY, USER_EVENTS_QUERY, NEW_EVENTS_SUBSCRIPTION, EVENT_SUBSCRIPTION, USER_POSITION_SUBSCRIPTION } from "@/graphql/events"
 
 
 /**
@@ -90,7 +90,7 @@ export const fetchEventsByStatus = async ({ status, limit = 100, offset = 0 }) =
       limit,
       offset,
     })
-    console.log("data", data.event)
+
     return (data?.event || []).map(transformEvent)
   } catch (error) {
     console.error(
@@ -309,6 +309,58 @@ export const subscribeToNewEvents = (onNewEvent, options = {}) => {
     return { unsubscribe }
   } catch (error) {
     console.error(`Error subscribing to new events: ${error.message}`)
+    return { unsubscribe: () => { } }
+  }
+}
+
+/**
+ * Subscribe to user position updates on an event
+ * @param {number} eventId - Event ID
+ * @param {string} userAddress - User wallet address
+ * @param {Function} onUpdate - Callback when position updates
+ * @returns {Object} Subscription object with unsubscribe method
+ */
+export const subscribeToUserPosition = (eventId, userAddress, onUpdate) => {
+  try {
+    if (!eventId) {
+      throw new Error("Event ID is required")
+    }
+
+    if (!userAddress) {
+      // No user logged in, return empty subscription
+      return { unsubscribe: () => { } }
+    }
+
+    if (typeof onUpdate !== 'function') {
+      throw new Error("onUpdate callback is required")
+    }
+
+    if (!flameWager.gql) {
+      console.warn("GraphQL client not initialized")
+      return { unsubscribe: () => { } }
+    }
+
+    // Use Wonka pipe and subscribe for URQL subscriptions
+    const { unsubscribe } = pipe(
+      flameWager.gql.subscription(USER_POSITION_SUBSCRIPTION, {
+        eventId: parseInt(eventId, 10),
+        userAddress
+      }),
+      subscribe((result) => {
+        if (result.error) {
+          console.error("User position subscription error:", result.error)
+          return
+        }
+
+        if (result?.data?.bet) {
+          onUpdate(result.data.bet)
+        }
+      })
+    )
+
+    return { unsubscribe }
+  } catch (error) {
+    console.error(`Error subscribing to user position: ${error.message}`)
     return { unsubscribe: () => { } }
   }
 }

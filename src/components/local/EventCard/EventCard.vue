@@ -431,7 +431,7 @@ onUnmounted(() => {
 
 					<Tooltip placement="bottom-end">
 						<div :class="$style.creator">
-							<template v-if="verifiedMakers[currentNetwork].includes(event.creatorId)">
+							<template v-if="verifiedMakers[currentNetwork].includes(event.creator.address)">
 								<Icon name="logo_symbol" size="24" color="primary" />
 								<Icon name="verified" size="16" color="green" :class="$style.verified_icon" />
 							</template>
@@ -446,7 +446,7 @@ onUnmounted(() => {
 						</div>
 
 						<template #content>
-							<template v-if="verifiedMakers[currentNetwork].includes(event.creatorId)">
+							<template v-if="verifiedMakers[currentNetwork].includes(event.creator.address)">
 								<Flex align="center" gap="6">
 									<Icon name="repeat" size="14" color="secondary" />
 									Recurring event by Juster
@@ -541,7 +541,7 @@ onUnmounted(() => {
 				</Badge>
 
 				<!-- Custom Badge -->
-				<Tooltip v-if="!verifiedMakers[currentNetwork].includes(event.creatorId)" placement="bottom-start">
+				<Tooltip v-if="!verifiedMakers[currentNetwork].includes(event.creator.address)" placement="bottom-start">
 					<Badge color="yellow" :class="$style.badge"> <Icon name="bolt" size="12" /> Custom </Badge>
 
 					<template #content>Custom event from user</template>
@@ -641,7 +641,7 @@ onUnmounted(() => {
 						<span>Stakes:</span>
 						{{ event.bets.length }} <br />
 						<span>Liquidity:</span>
-						{{ event.totalLiquidityProvided.toFixed(0) }} {{activeChainConfig.nativeCurrency.symbol}}
+						{{ Number(event.totalLiquidityProvided).toFixed(0) }} {{activeChainConfig.nativeCurrency.symbol}}
 					</template>
 				</Tooltip>
 
