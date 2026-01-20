@@ -1,119 +1,105 @@
 /**
- * Services
+ * Quotes API
+ * Functions for fetching price quotes and TVL data
  */
-import { flameWager as juster } from "@sdk"
+
+import { executeQuery } from "./graphql"
+import {
+	QUOTES_BY_MARKET_QUERY,
+	QUOTE_BY_RANGE_QUERY,
+	QUOTE_BY_TIMESTAMP_QUERY,
+	EVENT_TVL_QUERY,
+} from "@/graphql/quotes"
 
 /**
- * Models
+ * Fetch quotes for a specific market
  */
-
-import {
-	quotesWma as quotesWmaModel,
-	totalValueLocked as totalValueLockedModel,
-} from "@/graphql/models"
-
-export const fetchQuotesByMarket = async ({ id, limit, offset }) => {
+export const fetchQuotesByMarket = async ({ id, limit = 100, offset = 0 }) => {
 	try {
-		if (!id || !limit)
-			throw new Error(
-				`${(id == undefined && "ID") || (limit == undefined && "limit")
-				} is required`,
-			)
-		if (typeof id !== "number") throw new Error("ID must be a Number")
-		if (typeof limit !== "number") throw new Error("Limit must be a Number")
+		if (id === undefined || id === null) {
+			throw new Error("Market ID (currencyPairId) is required")
+		}
 
-		const { quotesWma } = await juster.gql.query({
-			quotesWma: [
-				{
-					where: {
-						currencyPairId: {
-							_eq: id,
-						},
-					},
-					order_by: {
-						timestamp: "desc",
-					},
-					limit: limit,
-					offset: offset,
-				},
-				quotesWmaModel,
-			],
+		const data = await executeQuery(QUOTES_BY_MARKET_QUERY, {
+			currencyPairId: id,
+			limit,
+			offset,
 		})
-		return quotesWma
+
+		return data?.quotesWma || []
 	} catch (error) {
 		console.error(
-			`Error during fetching quotes by id \n\n ${error.name}: ${error.message}`,
+			`Error fetching quotes for market ${id}: ${error.name}: ${error.message}`
 		)
 		return []
 	}
 }
 
+/**
+ * Fetch quotes by time range
+ */
 export const fetchQuoteByRange = async ({ id, tsGt, tsLt }) => {
 	try {
-		const { quotesWma } = await juster.gql.query({
-			quotesWma: [
-				{
-					where: {
-						timestamp: { _gte: tsGt, _lte: tsLt },
-						currencyPairId: { _eq: id },
-					},
-					order_by: { timestamp: "desc" },
-				},
-				quotesWmaModel,
-			],
+		if (id === undefined || id === null) {
+			throw new Error("Market ID is required")
+		}
+
+		const data = await executeQuery(QUOTE_BY_RANGE_QUERY, {
+			currencyPairId: id,
+			tsGt,
+			tsLt,
 		})
 
-		return quotesWma
+		return data?.quotesWma || []
 	} catch (error) {
 		console.error(
-			`Error during fetching quote by range ts & id \n\n ${error.name}: ${error.message}`,
+			`Error fetching quotes by range for market ${id}: ${error.name}: ${error.message}`
 		)
 		return []
 	}
 }
 
+/**
+ * Fetch quote for a specific timestamp
+ */
 export const fetchQuoteByTimestamp = async ({ id, ts }) => {
 	try {
-		const { quotesWma } = await juster.gql.query({
-			quotesWma: [
-				{
-					where: {
-						currencyPairId: { _eq: id },
-						timestamp: { _eq: ts },
-					},
-					order_by: { timestamp: "desc" },
-					limit: 1,
-				},
-				quotesWmaModel,
-			],
+		if (id === undefined || id === null) {
+			throw new Error("Market ID is required")
+		}
+
+		const data = await executeQuery(QUOTE_BY_TIMESTAMP_QUERY, {
+			currencyPairId: id,
+			timestamp: ts,
 		})
 
-		return quotesWma
+		return data?.quotesWma || []
 	} catch (error) {
 		console.error(
-			`Error during fetching quote by ts & id \n\n ${error.name}: ${error.message}`,
+			`Error fetching quote for market ${id} at ${ts}: ${error.name}: ${error.message}`
 		)
 		return []
 	}
 }
 
-/** TVL */
+/**
+ * Fetch TVL for an event
+ */
 export const fetchEventTVL = async ({ id }) => {
 	try {
-		const { totalValueLocked } = await juster.gql.query({
-			totalValueLockedModel: [
-				{
-					where: { eventId: { _eq: id } },
-				},
-				totalValueLockedModel,
-			],
-		})
+		if (id === undefined || id === null) {
+			throw new Error("Event ID is required")
+		}
 
-		return totalValueLocked
+		const data = await executeQuery(EVENT_TVL_QUERY, { id })
+
+		// The query returns eventByPk, and we want to return just the TVL value or the object
+		return data?.eventByPk || null
 	} catch (error) {
 		console.error(
-			`Error during fetching tvl by event id \n\n ${error.name}: ${error.message}`,
+			`Error fetching TVL for event ${id}: ${error.name}: ${error.message}`
 		)
-		return []
+		return null
 	}
 }
+

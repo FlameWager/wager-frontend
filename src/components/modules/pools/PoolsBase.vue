@@ -3,7 +3,7 @@
  * Vendor
  */
 import { ref, onMounted, onUnmounted, computed, watch } from "vue"
-import { makeSummaryPosition } from "@juster-finance/sdk"
+// import { makeSummaryPosition } from "@juster-finance/sdk"
 import { useMeta } from "vue-meta"
 import BN from "bignumber.js"
 
@@ -293,14 +293,14 @@ onUnmounted(() => {
 	}
 })
 
-watch(
-	() => isPopulated.value,
-	() => {
-		positions.value.forEach((pos) => {
-			summaries.value[pos.poolId] = makeSummaryPosition(pos, poolsStates.value[pos.poolId])
-		})
-	},
-)
+// watch(
+// 	() => isPopulated.value,
+// 	() => {
+// 		positions.value.forEach((pos) => {
+// 			summaries.value[pos.poolId] = makeSummaryPosition(pos, poolsStates.value[pos.poolId])
+// 		})
+// 	},
+// )
 
 /** Wait for a long initialisation of the pools */
 watch(

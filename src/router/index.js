@@ -5,7 +5,7 @@ const Home = () => import('../views/Home.vue')
 const Events = () => import('../views/EventsPage.vue')
 // const MyBets = () => import('../views/MyBets.vue')
 const EventPage = () => import('../views/EventPage.vue')
-// const PoolsPage = () => import('../views/PoolsPage.vue')
+const PoolsPage = () => import('../views/PoolsPage.vue')
 
 const routes = [
   {
@@ -24,11 +24,11 @@ const routes = [
     component: EventPage,
     props: true
   },
-  // {
-  //   path: "/pools",
-  //   name: "Liquidity Pools",
-  //   component: PoolsPage,
-  // },
+  {
+    path: "/pools",
+    name: "Liquidity Pools",
+    component: PoolsPage,
+  },
   // {
   //   path: '/my-bets',
   //   name: 'MyBets',

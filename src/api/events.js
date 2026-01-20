@@ -2,51 +2,7 @@ import { dipdup } from "@/services/config"
 import { currentNetwork, flameWager } from "@/services/sdk"
 import { pipe, subscribe } from "wonka"
 import { EVENTS_BY_STATUS_QUERY, EVENT_BY_ID_QUERY, EVENTS_BY_MARKET_QUERY, TOP_EVENTS_QUERY, EVENT_BETS_QUERY, EVENT_LIQUIDITY_QUERY, USER_EVENTS_QUERY, NEW_EVENTS_SUBSCRIPTION, EVENT_SUBSCRIPTION, USER_POSITION_SUBSCRIPTION } from "@/graphql/events"
-
-
-/**
- * Get GraphQL endpoint URL
- */
-const getGraphQLUrl = () => {
-  const networkKey = currentNetwork.value === 'mainnet' ? 'mainnet' : 'testnet'
-  const graphqlConfig = dipdup[networkKey];
-  if (!graphqlConfig) {
-    console.warn("GraphQL configuration not found for network:", networkKey)
-    return "http://localhost:8081/v1/graphql"
-  }
-  return graphqlConfig.graphql
-}
-
-/**
- * Execute a GraphQL query using native fetch
- */
-const executeQuery = async (query, variables = {}) => {
-  const url = getGraphQLUrl()
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query,
-      variables,
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
-
-  const result = await response.json()
-
-  if (result.errors) {
-    console.error("GraphQL errors:", result.errors)
-    throw new Error(result.errors[0]?.message || "GraphQL error")
-  }
-
-  return result.data
-}
+import { executeQuery } from "./graphql"
 
 /**
  * Transform event data for frontend compatibility
