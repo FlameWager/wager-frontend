@@ -289,9 +289,9 @@ const draw = () => {
 		.attr("fill", "none")
 		.attr(
 			"stroke",
-			(props.priceDynamics.diff > 0 && "#1aa168") ||
-				(props.priceDynamics.diff < 0 && "#e05c43") ||
-				(props.priceDynamics.diff == 0 && "#707070"),
+			(props.priceDynamics?.diff > 0 && "#1aa168") ||
+				(props.priceDynamics?.diff < 0 && "#e05c43") ||
+				"#707070",
 		)
 		.attr("stroke-width", 1.5)
 		.attr(
