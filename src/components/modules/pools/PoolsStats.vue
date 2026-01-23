@@ -45,7 +45,7 @@ const stats = computed(() => {
 
 	return {
 		valueOfPools,
-		avgSharePrice: avgSharePrice / Object.keys(props.poolsStates).length,
+		avgSharePrice: Object.keys(props.poolsStates).length ? avgSharePrice / Object.keys(props.poolsStates).length : 0,
 	}
 })
 
@@ -68,15 +68,6 @@ const apy = computed(() => {
 					}}
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
-
-				<!-- <Flex
-					align="center"
-					gap="4"
-					:class="[$style.badge, $style.green]"
-				>
-					<Icon name="arrow_circle_top" size="12" color="green" />
-					<Text size="12" color="green" weight="700"> 4.25% </Text>
-				</Flex> -->
 			</Flex>
 
 			<Text
@@ -89,8 +80,6 @@ const apy = computed(() => {
 			</Text>
 		</Flex>
 
-		<!-- Max APY -> PoolsBase -->
-		<!-- Shares -> PoolBase -->
 		<Flex
 			v-if="pools.length > 1"
 			direction="column"
@@ -103,15 +92,6 @@ const apy = computed(() => {
 					{{ numberWithSymbol(apy.max * 100, ",") }}%
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
-
-				<!-- <Flex
-					align="center"
-					gap="4"
-					:class="[$style.badge, $style.green]"
-				>
-					<Icon name="arrow_circle_top" size="12" color="green" />
-					<Text size="12" color="green" weight="700"> 4.25% </Text>
-				</Flex> -->
 			</Flex>
 
 			<Text
@@ -133,8 +113,8 @@ const apy = computed(() => {
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
 					{{
-						poolsStates[0].totalShares
-							? numberWithSymbol(poolsStates[0].totalShares, ",")
+						poolsStates[pools[0].address].totalShares
+							? numberWithSymbol(poolsStates[pools[0].address].totalShares, ",")
 							: 0
 					}}
 				</Text>
@@ -163,11 +143,6 @@ const apy = computed(() => {
 					{{ (apy.min * 100).toFixed(2) }}%
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
-
-				<!-- <Flex align="center" gap="4" :class="$style.badge">
-					<Icon name="arrow_circle_top" size="12" color="secondary" />
-					<Text size="12" color="secondary" weight="700"> 0% </Text>
-				</Flex> -->
 			</Flex>
 
 			<Text
@@ -189,17 +164,12 @@ const apy = computed(() => {
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
 					{{
-						poolsStates[0].sharePrice
-							? poolsStates[0].sharePrice.toFixed(2)
+						poolsStates[pools[0].address].sharePrice
+							? poolsStates[pools[0].address].sharePrice.toFixed(2)
 							: 0
 					}}
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
-
-				<!-- <Flex align="center" gap="4" :class="$style.badge">
-					<Icon name="arrow_circle_top" size="12" color="secondary" />
-					<Text size="12" color="secondary" weight="700"> 0% </Text>
-				</Flex> -->
 			</Flex>
 
 			<Text
@@ -224,11 +194,6 @@ const apy = computed(() => {
 					{{ poolMetrics.utilization.toFixed(2) }}%
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
-
-				<!-- <Flex align="center" gap="4" :class="$style.badge">
-					<Icon name="arrow_circle_top" size="12" color="secondary" />
-					<Text size="12" color="secondary" weight="700"> 0% </Text>
-				</Flex> -->
 			</Flex>
 
 			<Text
@@ -238,6 +203,54 @@ const apy = computed(() => {
 				:class="$style.stat__subtitle"
 			>
 				Utilization
+			</Text>
+		</Flex>
+
+		<Flex
+			v-if="pools.length === 1"
+			direction="column"
+			justify="center"
+			gap="8"
+			:class="$style.stat"
+		>
+			<Flex align="center" gap="6" :class="$style.stat__values">
+				<Text v-if="isReady" size="16" weight="600" color="primary">
+					{{ pools[0].activeLiquidity ? numberWithSymbol(pools[0].activeLiquidity, ",") : 0 }} ETH
+				</Text>
+				<LoadingDots v-else :class="$style.dots_anim" />
+			</Flex>
+
+			<Text
+				size="14"
+				weight="500"
+				color="tertiary"
+				:class="$style.stat__subtitle"
+			>
+				Active Backing
+			</Text>
+		</Flex>
+
+		<Flex
+			v-if="pools.length === 1"
+			direction="column"
+			justify="center"
+			gap="8"
+			:class="$style.stat"
+		>
+			<Flex align="center" gap="6" :class="$style.stat__values">
+				<Text v-if="isReady" size="16" weight="600" color="primary">
+					{{ pools[0].withdrawableLiquidity ? numberWithSymbol(pools[0].withdrawableLiquidity, ",") : 0 }} ETH
+				</Text>
+				<LoadingDots v-else :class="$style.dots_anim" />
+			</Flex>
+
+			<Text
+				size="14"
+				weight="500"
+				color="tertiary"
+				:class="$style.stat__subtitle"
+			>
+				Withdrawable
 			</Text>
 		</Flex>
 	</Flex>

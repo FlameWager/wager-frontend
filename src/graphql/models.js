@@ -251,8 +251,30 @@ export const pool = {
   totalDeposits: true,
   totalRewards: true,
   totalShares: true,
+  activeLiquidity: true,
+  withdrawableLiquidity: true,
   totalParticipants: true,
   totalEventsParticipated: true,
+};
+
+/**
+ * Pool line / strategy fields
+ */
+export const poolLine = {
+  id: true,
+  pool: {
+    address: true,
+  },
+  currencyPair: {
+    symbol: true,
+  },
+  targetDynamics: true,
+  measurePeriod: true,
+  liquidityPercent: true,
+  lastBetsCloseTime: true,
+  maxEvents: true,
+  activeEventsCount: true,
+  isPaused: true,
 };
 
 /**
@@ -304,6 +326,9 @@ export const poolEventParticipation = {
     },
     status: true,
     totalValueLocked: true,
+  },
+  line: {
+    id: true,
   },
   amount: true,
   transactionHash: true,

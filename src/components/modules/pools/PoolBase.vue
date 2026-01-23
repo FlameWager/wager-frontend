@@ -17,6 +17,7 @@ import BottomInfo from "./BottomInfo.vue"
 import PoolsStats from "./PoolsStats.vue"
 import PoolsChart from "./PoolsChart.vue"
 import MySummary from "./MySummary.vue"
+import PoolLineCard from "./PoolLineCard.vue"
 import { EventCard, EventCardLoading } from "@local/EventCard"
 
 /**
@@ -41,7 +42,8 @@ import {
 	poolPosition as poolPositionModel,
 	poolState as poolStateModel,
 	poolEvent as poolEventModel,
-} from "@/graphql/models"
+	poolLine as poolLineModel,
+} from "@/graphql/pools"
 
 /**
  * Store
@@ -111,6 +113,12 @@ const subStates = ref({})
  */
 const subEvents = ref({})
 const events = ref([])
+
+/** 
+ * Lines
+ */
+const subLines = ref({})
+const lines = ref([])
 
 const riskIndex = ref(0)
 const utilization = ref(0)
@@ -242,6 +250,30 @@ const setupSubToEvents = async () => {
 		})
 }
 
+const setupSubToLines = async () => {
+	subLines.value = await juster.gql
+		.subscription({
+			poolLine: [
+				{
+					where: {
+						pool: {
+							address: {
+								_eq: route.params.address,
+							},
+						},
+					},
+				},
+				poolLineModel,
+			],
+		})
+		.subscribe({
+			next: ({ poolLine }) => {
+				lines.value = poolLine
+			},
+			error: console.error,
+		})
+}
+
 const showAnimation = ref(false)
 onMounted(() => {
 	showAnimation.value = true
@@ -259,6 +291,7 @@ const init = () => {
 	setupSubToPositions()
 	populatePool()
 	setupSubToEvents()
+    setupSubToLines()
 
 	juster.pools[pool.value.address].subscribeToRiskIndex((data) => {
 		if (data.isNaN()) return
@@ -429,8 +462,9 @@ const { meta } = useMeta({
 						</Flex>
 
 						<Flex :class="$style.items">
-							<EventCardLoading v-if="!events.length" v-for="i in 2" :key="i" />
-							<EventCard v-else v-for="event in events" :key="event.id" :event="event" />
+							<PoolLineCard v-for="line in lines" :key="line.id" :line="line" />
+							<EventCardLoading v-if="!events.length && !lines.length" v-for="i in 2" :key="i" />
+							<EventCard v-for="event in events" :key="event.id" :event="event" />
 						</Flex>
 					</Flex>
 
