@@ -4,9 +4,8 @@ import {
   currentNetwork,
   initPools,
   destroySubscription,
-  connect,
-  disconnect,
-  initializeGraphQL,
+  initWithSigner,
+  placeBet,
   getContractAddresses,
 } from "./flameWager"
 import analytics from "./analytics"
@@ -42,9 +41,8 @@ export {
   currentNetwork,
   initPools,
   destroySubscription,
-  connect,
-  disconnect,
-  initializeGraphQL,
   getContractAddresses,
+  placeBet,
+  initWithSigner,
   analytics,
 }

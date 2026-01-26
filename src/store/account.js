@@ -1,10 +1,12 @@
 // src/store/wallet.js
 import { defineStore } from 'pinia';
 import { ethers } from 'ethers';
-import { 
+import { flameWager, initWithSigner } from "@sdk";
+import {
   getBalance,
   disconnect,
   connect,
+  reconnect,
   switchChain
 } from '@wagmi/core';
 import { injected, metaMask } from '@wagmi/vue/connectors'
@@ -39,7 +41,7 @@ export const useAccountStore = defineStore({
 
     networkName: (state) => {
       if (!state.chainId) return 'Not Connected';
-      
+
       switch (state.chainId) {
         case 127823:
           return "Etherlink Shadownet";
@@ -71,14 +73,21 @@ export const useAccountStore = defineStore({
         // Set address
         this.pkh = result.accounts[0];
 
+        // Create ethers provider & signer from the injected provider
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
+
+        // Initialize FlameWager SDK with the signer
+        await initWithSigner(signer, result.accounts[0])
+
         // Get and set network info
         this.chainId = activeChainConfig.id;
 
         // Get balance
         await this.refreshBalance();
 
-        // // Save connection state
-        // localStorage.setItem('wallet-autoconnect', 'true');
+        // Save connection state
+        localStorage.setItem('wallet-autoconnect', 'true');
 
         return true;
       } catch (error) {
@@ -89,23 +98,11 @@ export const useAccountStore = defineStore({
       }
     },
 
-    async switchToFlameNetwork() {
-      try {
-        await switchChain(config, {
-          chainId: activeChainConfig.id
-        });
-        return true;
-      } catch (error) {
-        console.error('Failed to switch networks:', error);
-        return false;
-      }
-    },
-
     async logout() {
       try {
         // Disconnect using wagmi
         await disconnect();
-        
+
         // Reset state
         this.handleDisconnect();
       } catch (error) {
@@ -126,9 +123,13 @@ export const useAccountStore = defineStore({
         when: null,
         hash: null
       };
-      
+
       // Clear local storage
       localStorage.removeItem('wallet-autoconnect');
+    },
+
+    updateBalance() {
+      this.refreshBalance();
     },
 
     async refreshBalance() {
@@ -170,14 +171,42 @@ export const useAccountStore = defineStore({
     },
 
     async init() {
-      // Only try to connect if explicitly requested
-      const shouldAutoConnect = localStorage.getItem('wallet-autoconnect') === 'true';
-      if (shouldAutoConnect) {
-        try {
-          await this.connectWallet();
-        } catch (error) {
-          console.error('Auto-connect failed:', error);
-          localStorage.removeItem('wallet-autoconnect');
+      // Attempt to auto-connect using wagmi's reconnect
+      try {
+        const result = await reconnect(config);
+
+        if (result && result.length > 0) {
+          // Success, update state
+          this.pkh = result[0].accounts[0];
+          this.chainId = activeChainConfig.id;
+
+          // Initialize FlameWager SDK with signer on auto-connect
+          if (window.ethereum) {
+            const provider = new ethers.BrowserProvider(window.ethereum)
+            const signer = await provider.getSigner()
+            await initWithSigner(signer, this.pkh)
+          }
+
+          await this.refreshBalance();
+          localStorage.setItem('wallet-autoconnect', 'true');
+        } else {
+          // If reconnect fails/returns empty, check manual flag as fallback
+          const shouldAutoConnect = localStorage.getItem('wallet-autoconnect') === 'true';
+          if (shouldAutoConnect) {
+            await this.connectWallet();
+          }
+        }
+      } catch (error) {
+        console.error('Auto-connect failed:', error);
+        // Fallback to manual connect if reconnect throws (but check flag first)
+        const shouldAutoConnect = localStorage.getItem('wallet-autoconnect') === 'true';
+        if (shouldAutoConnect) {
+          try {
+            await this.connectWallet();
+          } catch (e) {
+            console.error("Manual connect fallback failed", e);
+            localStorage.removeItem('wallet-autoconnect');
+          }
         }
       }
     }
