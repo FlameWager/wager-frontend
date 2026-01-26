@@ -116,7 +116,7 @@ onMounted(async () => {
 
 				<Flex align="center" gap="8">
 					<Flex align="center" gap="8">
-						<Icon name="logo_symbol" size="20" color="brand" />
+						<Icon name="logo_symbol" size="20" color="brand" viewBox="0 0 100 100"/>
 						<Text size="14" weight="500" color="primary"> Juster Team </Text>
 					</Flex>
 

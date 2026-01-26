@@ -172,7 +172,7 @@ const isHighdemand = computed(() => props.event.bets.length >= 4)
 				<Tooltip placement="top">
 					<div :class="$style.creator">
 						<template v-if="verifiedMakers[currentNetwork].includes(event.creatorId)">
-							<Icon name="logo_symbol" size="24" color="primary" />
+							<Icon name="logo_symbol" size="24" color="primary" viewBox="0 0 100 100"/>
 							<Icon name="verified" size="16" color="green" :class="$style.verified_icon" />
 						</template>
 

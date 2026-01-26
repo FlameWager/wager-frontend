@@ -133,7 +133,7 @@ onBeforeUnmount(() => {
 		<div :class="$style.base">
 			<div :class="$style.content">
 				<div :class="$style.logo">
-					<Icon name="logo_symbol" size="32" />
+					<Icon name="logo_symbol" size="32" viewBox="0 0 100 100"/>
 				</div>
 
 				<div :class="$style.columns">

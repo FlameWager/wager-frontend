@@ -18,7 +18,7 @@ const showSlippageToleranceDropdown = ref(false)
 <template>
 	<Flex direction="column" gap="40">
 		<Flex align="center" :class="$style.app_card">
-			<Icon name="logo_symbol" size="24" color="brand" />
+			<Icon name="logo_symbol" size="24" color="brand" viewBox="0 0 100 100"/>
 
 			<div :class="$style.divider" />
 

@@ -222,7 +222,7 @@ const pkh = computed(() => accountStore.pkh)
 				</div>
 
 				<router-link to="/" :class="$style.logo" tabindex="-1">
-					<Icon name="logo_symbol" size="28" />
+					<Icon name="logo_symbol" size="28" viewBox="0 0 100 100"/>
 				</router-link>
 			</div>
 

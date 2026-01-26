@@ -8,6 +8,7 @@ const props = defineProps({
 	fill: { type: Boolean, default: false },
 	color: { type: String, default: null },
 	rotate: { type: [String, Number], default: 0 },
+	viewBox: { type: String, default: "0 0 24 24" },
 })
 
 const styles = computed(() => {
@@ -41,7 +42,7 @@ const isSplitted = () => {
 
 <template>
 	<svg
-		viewBox="0 0 24 24"
+		:viewBox="viewBox"
 		:width="size"
 		:height="size"
 		:style="styles"
@@ -62,6 +63,10 @@ const isSplitted = () => {
 					:key="i"
 					:d="icon.path"
 					:style="{ opacity: fill ? 1 : icon.opacity }"
+					:fill="icon.fill"
+					:stroke="icon.stroke"
+					:stroke-width="icon.strokeWidth"
+					:stroke-linejoin="icon.strokeLinejoin"
 				/>
 			</template>
 		</template>
