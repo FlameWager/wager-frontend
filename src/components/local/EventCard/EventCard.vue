@@ -737,6 +737,7 @@ onUnmounted(() => {
 	position: absolute;
 	z-index: 1;
 	outline: 3px solid var(--card-bg);
+	background: var(--card-bg);
 }
 
 .symbol_imgs img:last-child {
