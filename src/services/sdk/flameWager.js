@@ -6,7 +6,7 @@
 /**
  * Vendor
  */
-import { computed, reactive } from "vue"
+import { computed, reactive, markRaw } from "vue"
 import { ethers } from "ethers"
 import { switchChain } from "@wagmi/core"
 import { createClient } from "@urql/vue"
@@ -63,9 +63,16 @@ if (typeof localStorage !== 'undefined') {
 /**
  * Initialize GraphQL client
  */
-const initializeGraphQL = () => {
+const init = () => {
   const networkKey = currentNetwork.value === 'mainnet' ? 'mainnet' : 'testnet'
   const graphqlConfig = dipdup[networkKey]
+  const addresses = getContractAddresses()
+
+  flameWager.contracts.core = markRaw(new ethers.Contract(
+    addresses.wager,
+    wagerABI,
+    flameWager.signer
+  ))
 
   if (!graphqlConfig) {
     console.warn("GraphQL configuration not found for network:", networkKey)
@@ -77,7 +84,7 @@ const initializeGraphQL = () => {
       url: graphqlConfig.ws,
     });
 
-    flameWager.gql = createClient({
+    flameWager.gql = markRaw(createClient({
       url: graphqlConfig.graphql,
       exchanges: [
         cacheExchange,
@@ -97,16 +104,16 @@ const initializeGraphQL = () => {
       fetchOptions: {
         method: "POST",
       },
-    });
+    }));
 
     console.log("✅ GraphQL client initialized:", graphqlConfig.graphql)
   } catch (error) {
     console.error("Failed to initialize GraphQL client:", error)
 
     // Fallback: Create client without subscriptions
-    flameWager.gql = createClient({
+    flameWager.gql = markRaw(createClient({
       url: graphqlConfig.graphql,
-    })
+    }))
   }
 }
 
@@ -119,42 +126,6 @@ const getContractAddresses = () => {
 }
 
 /**
- * Initialize contract instances
- */
-const initializeContracts = async () => {
-  const addresses = getContractAddresses()
-
-  if (!flameWager.signer) {
-    console.warn("Cannot initialize contracts: no signer available")
-    return
-  }
-
-  try {
-    // Initialize core (wager) contract
-    if (addresses.wager) {
-      flameWager.contracts.core = new ethers.Contract(
-        addresses.wager,
-        wagerABI,
-        flameWager.signer
-      )
-    }
-
-    // Initialize pool contract
-    if (addresses.pool) {
-      flameWager.contracts.pools[addresses.pool] = new ethers.Contract(
-        addresses.pool,
-        poolABI,
-        flameWager.signer
-      )
-    }
-
-    console.log("✅ Contracts initialized")
-  } catch (error) {
-    console.error("Failed to initialize contracts:", error)
-  }
-}
-
-/**
  * Initialize pool contracts
  */
 const initPools = (pools) => {
@@ -164,82 +135,57 @@ const initPools = (pools) => {
   }
 
   pools.forEach(pool => {
-    flameWager.contracts.pools[pool.address] = new ethers.Contract(
+    flameWager.contracts.pools[pool.address] = markRaw(new ethers.Contract(
       pool.address,
       poolABI,
       flameWager.signer
-    )
+    ))
   })
 }
 
-/**
- * Setup event listeners for wallet and network changes
- */
-const setupEventListeners = () => {
-  if (typeof window === 'undefined' || !window.ethereum) return
 
-  // Handle account changes
-  window.ethereum.on('accountsChanged', (accounts) => {
-    if (accounts.length === 0) {
-      // User disconnected their wallet
-      disconnect()
-    } else {
-      // User switched accounts
-      flameWager.address = accounts[0]
-    }
-  })
-
-  // Handle chain changes
-  window.ethereum.on('chainChanged', (chainIdHex) => {
-    // Need to reload the page on chain change
-    window.location.reload()
-  })
-}
 
 /**
- * Connect wallet
+ * Initialize SDK with an external signer (from wagmi/account store)
+ * This is the preferred method when using wagmi for wallet connection
+ * @param {ethers.Signer} signer - The signer from wagmi/ethers
+ * @param {string} address - The connected wallet address
  */
-const connect = async () => {
-  if (typeof window === 'undefined' || !window.ethereum) {
-    throw new Error("No wallet found. Please install MetaMask.")
+const initWithSigner = async (signer, address) => {
+  if (!signer) {
+    throw new Error("Signer is required")
   }
 
   try {
-    // Request accounts
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-
-    // Create provider and signer
-    const provider = new ethers.BrowserProvider(window.ethereum)
-    const signer = await provider.getSigner()
-
-    flameWager.provider = provider
-    flameWager.signer = signer
-    flameWager.address = accounts[0]
+    flameWager.signer = markRaw(signer)
+    flameWager.provider = markRaw(signer.provider)
+    flameWager.address = address
     flameWager.isConnected = true
 
-    // Initialize contracts and GraphQL
-    await initializeContracts()
-    initializeGraphQL()
-    setupEventListeners()
+    // Re-initialize contracts with the new signer
+    const addresses = getContractAddresses()
 
-    console.log("✅ Wallet connected:", accounts[0])
-    return accounts[0]
+    if (addresses.wager) {
+      flameWager.contracts.core = markRaw(new ethers.Contract(
+        addresses.wager,
+        wagerABI,
+        flameWager.signer
+      ))
+    }
+
+    if (addresses.pool) {
+      flameWager.contracts.pools[addresses.pool] = markRaw(new ethers.Contract(
+        addresses.pool,
+        poolABI,
+        flameWager.signer
+      ))
+    }
+
+    console.log("✅ FlameWager SDK contracts connected to signer:", address)
   } catch (error) {
-    console.error("Failed to connect wallet:", error)
+    console.error("Failed to initialize SDK with signer:", error)
     throw error
   }
-}
-
-/**
- * Disconnect wallet
- */
-const disconnect = () => {
-  flameWager.provider = null
-  flameWager.signer = null
-  flameWager.address = null
-  flameWager.isConnected = false
-  flameWager.contracts.core = null
-  flameWager.contracts.pools = {}
 }
 
 /**
@@ -270,7 +216,7 @@ const switchNetwork = async (network, router) => {
   localStorage.activeNetwork = network
 
   // Reinitialize GraphQL for new network
-  initializeGraphQL()
+  init()
 
   if (router) {
     router.push("/")
@@ -288,17 +234,42 @@ const destroySubscription = (sub) => {
   }
 }
 
+/**
+ * Place a bet on an event
+ * @param {number} eventId - The event ID
+ * @param {string} betType - "aboveEq" or "below"
+ * @param {BigInt|string} amount - The bet amount in wei
+ * @param {BigInt|string} minWinAmount - Minimum acceptable win amount in wei
+ * @returns {Promise<ethers.TransactionResponse>}
+ */
+const placeBet = async (eventId, betType, amount, minWinAmount) => {
+  if (!flameWager.contracts.core) {
+    throw new Error("Contract not initialized. Please connect wallet first.")
+  }
+
+  // Convert betType string to uint8 (0 = ABOVE_EQ, 1 = BELOW)
+  const betTypeNum = betType === "aboveEq" ? 0 : 1
+
+  const tx = await flameWager.contracts.core.placeBet(
+    eventId,
+    betTypeNum,
+    minWinAmount,
+    { value: amount }
+  )
+
+  return tx
+}
+
 // Initialize GraphQL client on load
-initializeGraphQL()
+init()
 
 export {
   flameWager,
   currentNetwork,
-  connect,
-  disconnect,
   switchNetwork,
   initPools,
   destroySubscription,
-  initializeGraphQL,
   getContractAddresses,
+  placeBet,
+  initWithSigner,
 }

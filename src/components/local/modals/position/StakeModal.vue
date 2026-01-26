@@ -10,7 +10,7 @@ import BN from "bignumber.js"
 /**
  * Services
  */
-import { flameWager, currentNetwork, analytics } from "@sdk"
+import { flameWager, currentNetwork, analytics, placeBet } from "@sdk"
 import { verifiedMakers, supportedMarkets } from "~/services/config"
 import { sanitizeInput, getCurrencyIcon } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
@@ -291,35 +291,39 @@ const handleStake = () => {
 	emit("onContinue")
 }
 
-const handleUserTransactionConfirmation = () => {
+const handleUserTransactionConfirmation = async () => {
 	if (buttonState.value.disabled) return
 
-	let betType
-
-	if (side.value == "Rise") betType = "aboveEq"
-	if (side.value == "Fall") betType = "below"
+	const betType = side.value === "Rise" ? "aboveEq" : "below"
 
 	sendingBet.value = true
 
-	flameWager.sdk
-		.bet(props.event.id, betType, BN(amount.value), BN(minReward.value))
-		.then((op) => {
-			/** Pending transaction label */
-			accountStore.pendingTransaction.awaiting = true
-			op.confirmation()
-				.then((result) => {
-					accountStore.pendingTransaction.awaiting = false
-					if (!result.completed) {
-						// todo: handle it?
-					}
-				})
-				.catch(() => {
-					accountStore.pendingTransaction.awaiting = false
-				})
+	try {
+		// Convert amounts to wei using ethers
+		const { ethers } = await import("ethers")
+		const amountWei = ethers.parseEther(amount.value.toString())
+		const minRewardWei = ethers.parseEther(minReward.value.toString())
 
-			sendingBet.value = false
+        // Call the SDK function
+        const tx = await placeBet(
+            props.event.id,
+            side.value === "Rise" ? "aboveEq" : "below",
+            amountWei,
+            minRewardWei
+        )
 
-			/** slow notification to get attention */
+		// Set pending state
+		accountStore.pendingTransaction.awaiting = true
+		accountStore.pendingTransaction.hash = tx.hash
+
+		// Wait for confirmation
+		const receipt = await tx.wait()
+
+		accountStore.pendingTransaction.awaiting = false
+		sendingBet.value = false
+
+		if (receipt.status === 1) {
+			// Success
 			setTimeout(() => {
 				notificationsStore.create({
 					notification: {
@@ -330,35 +334,64 @@ const handleUserTransactionConfirmation = () => {
 					},
 				})
 			}, 700)
-			/** analytics */
+
 			analytics.log("onBet", {
 				eventId: props.event.id,
 				amount: amount.value,
-				fm: fee.value.toNumber(),
+				txHash: tx.hash,
 				tts: DateTime.fromISO(props.event.betsCloseTime).ts - DateTime.now().ts,
 			})
 
+			emit("onBet", { side: side.value, amount: amount.value })
 			emit("onClose")
+		} else {
+			throw { description: "Transaction failed" }
+		}
+	} catch (err) {
+		accountStore.pendingTransaction.awaiting = false
+		sendingBet.value = false
+
+		// Map Solidity errors to user-friendly messages
+		const errorMessage = mapContractError(err)
+
+		analytics.log("onError", {
+			eventId: props.event.id,
+			error: errorMessage,
 		})
-		.catch((err) => {
-			/** analytics */
-			analytics.log("onError", {
-				eventId: props.event.id,
-				error: err.description,
+
+		setTimeout(() => {
+			console.log(errorMessage)
+			notificationsStore.create({
+				notification: {
+					type: "warning",
+					title: "Your bet was not accepted",
+					description: errorMessage,
+					autoDestroy: true,
+				},
 			})
-			/** slow notification to get attention */
-			setTimeout(() => {
-				notificationsStore.create({
-					notification: {
-						type: "warning",
-						title: "Your bet was not accepted",
-						description: err.description,
-						autoDestroy: true,
-					},
-				})
-			}, 700)
-			sendingBet.value = false
-		})
+		}, 700)
+	}
+}
+
+// Helper to map contract errors to user-friendly messages
+const mapContractError = (err) => {
+	const reason = err?.reason || err?.message || err?.description || "Unknown error"
+
+	const errorMap = {
+		"BetsClosed": "Betting is closed for this event",
+		"BetTooSmall": "Bet amount is too small",
+		"BetTooLarge": "Bet amount is too large",
+		"InvalidBetType": "Invalid bet type",
+		"ContractPaused": "Betting is temporarily paused",
+		"user rejected": "Transaction was rejected",
+		"insufficient funds": "Insufficient balance for this bet",
+	}
+
+	for (const [key, message] of Object.entries(errorMap)) {
+		if (reason.toLowerCase().includes(key.toLowerCase())) return message
+	}
+
+	return reason
 }
 </script>
 
