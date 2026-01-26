@@ -32,7 +32,7 @@ const router = useRouter()
 /** Watch for DipDup, Quotes, Network */
 let checkInterval = null
 
-const initCurrentDt = DateTime.now()
+
 
 const STATUSES = {
 	LOADING: "Loading..",
@@ -57,46 +57,61 @@ const statusBlock = computed(() => {
 })
 
 const checkDipdup = async () => {
-	const urlToCheck =
-		currentNetwork.value == "mainnet"
-			? "https://juster.dipdup.net/api/rest/dipdupHead?name=https://tzkt-mainnet.dipdup.net"
-			: "https://api.ithacanet-pool.juster.fi/api/rest/dipdupHead?name=https://api.ghostnet.tzkt.io"
-	const {
-		data: { dipdupHeadByPk },
-	} = await axios.get(urlToCheck)
+	const url = import.meta.env.DEV ? "http://localhost:8081/" : ""
 
-	const dipdupDt = DateTime.fromISO(dipdupHeadByPk.timestamp)
-	const dipdupDiff = initCurrentDt.diff(dipdupDt, ["minutes", "seconds"]).toObject()
-
-	if (dipdupDiff.minutes >= 3) {
-		status.dipdup = STATUSES.DELAYED
-	} else {
+	if (!url) {
 		status.dipdup = STATUSES.GOOD
+		return
+	}
+
+	try {
+		await axios.get(url)
+		status.dipdup = STATUSES.GOOD
+	} catch (e) {
+		status.dipdup = STATUSES.DELAYED
 	}
 }
 
 const checkNetwork = async () => {
-	const { data } = await axios.get(
-		`https://rpc.tzkt.io/${currentNetwork.value == "mainnet" ? "mainnet" : "ghostnet"}/chains/main/blocks/head/header`,
-	)
+	const rpcUrl =
+		currentNetwork.value === "mainnet" ? "https://node.mainnet.etherlink.com" : "https://node.shadownet.etherlink.com"
 
-	const networkDt = DateTime.fromISO(data.timestamp)
-	const networkDiff = initCurrentDt.diff(networkDt, ["minutes", "seconds"]).toObject()
+	try {
+		const { data } = await axios.post(rpcUrl, {
+			jsonrpc: "2.0",
+			method: "eth_getBlockByNumber",
+			params: ["latest", false],
+			id: 1,
+		})
 
-	if (networkDiff.minutes >= 1) {
+		if (data.result && data.result.timestamp) {
+			const networkDt = DateTime.fromSeconds(parseInt(data.result.timestamp, 16))
+			const networkDiff = DateTime.now().diff(networkDt, ["minutes", "seconds"]).toObject()
+
+			if (networkDiff.minutes >= 1) {
+				status.network = STATUSES.DELAYED
+			} else {
+				status.network = STATUSES.GOOD
+			}
+		}
+	} catch (e) {
 		status.network = STATUSES.DELAYED
-	} else {
-		status.network = STATUSES.GOOD
 	}
 }
 
-const checkQuotes = () => {
-	const quotesDiff = initCurrentDt.diff(DateTime.fromISO(marketStore.markets["XTZ-USD"].quotes[0].timestamp), ["minutes"]).toObject()
+const checkQuotes = async () => {
+	const url = import.meta.env.DEV ? "http://localhost:8081/" : ""
 
-	if (quotesDiff.minutes >= 10) {
-		status.quotes = STATUSES.DELAYED
-	} else {
+	if (!url) {
 		status.quotes = STATUSES.GOOD
+		return
+	}
+
+	try {
+		await axios.get(url)
+		status.quotes = STATUSES.GOOD
+	} catch (e) {
+		status.quotes = STATUSES.DELAYED
 	}
 }
 
@@ -106,11 +121,7 @@ const handleSwitch = (network) => {
 	// })
 }
 
-marketStore.$subscribe((mutation, state) => {
-	if (state.markets["XTZ-USD"].quotes.length) {
-		checkQuotes()
-	}
-})
+
 
 onMounted(async () => {
 	checkDipdup()
