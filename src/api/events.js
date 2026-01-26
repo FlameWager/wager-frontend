@@ -13,7 +13,7 @@ const transformEvent = (event) => {
     ...event,
     creatorId: event.creator?.address,
     bets: event.bets || [],
-    deposits: event.liquidityProvisions || [],
+    deposits: event.deposits || [],
   }
 }
 
@@ -130,13 +130,13 @@ export const fetchEventParticipants = async (eventId) => {
 
     return {
       bets: betsData?.bet || [],
-      liquidityProvisions: lpsData?.liquidityProvision || [],
+      deposits: lpsData?.deposit || [],
     }
   } catch (error) {
     console.error(
       `Error fetching participants for event ${eventId}: ${error.name}: ${error.message}`
     )
-    return { bets: [], liquidityProvisions: [] }
+    return { bets: [], deposits: [] }
   }
 }
 

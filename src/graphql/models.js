@@ -52,14 +52,15 @@ export const eventWithParticipants = {
     amount: true,
     timestamp: true,
   },
-  liquidityProvisions: {
+  deposits: {
     id: true,
-    provider: {
-      address: true,
-    },
-    amount: true,
+    amountAboveEq: true,
+    amountBelow: true,
     shares: true,
-    timestamp: true,
+    createdTime: true,
+    event_id: true,
+    user_id: true,
+    transactionHash: true,
   },
 };
 
@@ -124,21 +125,14 @@ export const bet = {
 /**
  * Liquidity provision model
  */
-export const liquidityProvision = {
+export const deposit = {
   id: true,
-  event: {
-    id: true,
-    currencyPair: {
-      symbol: true,
-    },
-    status: true,
-  },
-  provider: {
-    address: true,
-  },
-  amount: true,
+  amountAboveEq: true,
+  amountBelow: true,
   shares: true,
-  payout: true,
+  createdTime: true,
+  eventId: true,
+  userId: true,
   transactionHash: true,
   timestamp: true,
 };
@@ -171,8 +165,8 @@ export const userWithPositions = {
   bets: {
     ...bet,
   },
-  liquidityProvisions: {
-    ...liquidityProvision,
+  deposits: {
+    ...deposit,
   },
 };
 

@@ -37,7 +37,7 @@ export const EVENTS_BY_STATUS_QUERY = `
       totalValueLocked
       startRate
       closedRate
-      isBetsAboveEqWin
+      winnerBets
       measureOracleStartTime
       closedOracleTime
     }
@@ -72,7 +72,7 @@ export const EVENT_BY_ID_QUERY = `
       totalValueLocked
       startRate
       closedRate
-      isBetsAboveEqWin
+      winnerBets
       measureOracleStartTime
       closedOracleTime
       bets {
@@ -84,12 +84,12 @@ export const EVENT_BY_ID_QUERY = `
         amount
         timestamp
       }
-      liquidityProvisions {
+      deposits {
         id
-        provider {
-          address
-        }
-        amount
+        userId
+        eventId
+        amountAboveEq
+        amountBelow
         shares
         timestamp
       }
@@ -132,7 +132,7 @@ export const EVENTS_BY_MARKET_QUERY = `
       totalValueLocked
       startRate
       closedRate
-      isBetsAboveEqWin
+      winnerBets
       measureOracleStartTime
       closedOracleTime
     }
@@ -171,7 +171,7 @@ export const TOP_EVENTS_QUERY = `
       totalValueLocked
       startRate
       closedRate
-      isBetsAboveEqWin
+      winnerBets
       measureOracleStartTime
       closedOracleTime
     }
@@ -207,19 +207,18 @@ export const EVENT_BETS_QUERY = `
  */
 export const EVENT_LIQUIDITY_QUERY = `
   query EventLiquidity($eventId: bigint!) {
-    liquidityProvision(
+    deposit(
       where: { event: { id: { _eq: $eventId } } }
       order_by: { timestamp: desc }
     ) {
       id
-      provider {
-        address
-      }
-      amount
+      userId
+      eventId
+      amountAboveEq
+      amountBelow
       shares
-      payout
-      transactionHash
       timestamp
+      transactionHash
     }
   }
 `
@@ -257,7 +256,7 @@ export const USER_EVENTS_QUERY = `
         totalValueLocked
         startRate
         closedRate
-        isBetsAboveEqWin
+        winnerBets
         measureOracleStartTime
         closedOracleTime
       }
@@ -297,7 +296,7 @@ export const EVENT_SUBSCRIPTION = `
       totalValueLocked
       startRate
       closedRate
-      isBetsAboveEqWin
+      winnerBets
       measureOracleStartTime
       closedOracleTime
     }
@@ -336,7 +335,7 @@ export const NEW_EVENTS_SUBSCRIPTION = `
       totalValueLocked
       startRate
       closedRate
-      isBetsAboveEqWin
+      winnerBets
       measureOracleStartTime
       closedOracleTime
     }

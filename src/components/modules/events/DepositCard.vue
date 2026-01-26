@@ -93,7 +93,7 @@ const returnForLiquidity = computed(() => {
 		<!-- Desktop Template -->
 		<div :class="$style.desktop">
 			<div :class="[$style.param, $style.up]">
-				<!-- {{ numberWithSymbol(deposit.amountAboveEq.toFixed(0), ",") }}&nbsp;<span>XTZ</span> -->
+				{{ numberWithSymbol(deposit.amountAboveEq.toFixed(0), ",") }}&nbsp;<span>XTZ</span>
 			</div>
 
 			<div v-if="event.status == 'FINISHED' && returnForLiquidity" :class="[$style.param]">

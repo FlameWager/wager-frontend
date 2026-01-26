@@ -4,7 +4,7 @@
  */
 
 import { flameWager } from "@/services/sdk"
-import { position, bet, liquidityProvision } from "@/graphql/models"
+import { position, bet, deposit } from "@/graphql/models"
 
 /**
  * Fetch user positions for withdrawal (winning positions that haven't been withdrawn)
@@ -37,8 +37,8 @@ export const fetchUserPositionsForWithdraw = async ({ address }) => {
     })
 
     // Fetch liquidity provisions
-    const { liquidityProvisions } = await flameWager.gql.query({
-      liquidityProvisions: [
+    const { deposits } = await flameWager.gql.query({
+      deposits: [
         {
           where: {
             provider: { address: { _eq: address } },
@@ -47,7 +47,7 @@ export const fetchUserPositionsForWithdraw = async ({ address }) => {
           order_by: { timestamp: "desc" },
         },
         {
-          ...liquidityProvision,
+          ...deposit,
           payout: true,
         },
       ],
@@ -56,7 +56,7 @@ export const fetchUserPositionsForWithdraw = async ({ address }) => {
     // Combine and return
     const positions = [
       ...(bets || []).map(b => ({ ...b, type: "bet" })),
-      ...(liquidityProvisions || []).map(lp => ({ ...lp, type: "liquidity" })),
+      ...(deposits || []).map(lp => ({ ...lp, type: "liquidity" })),
     ]
 
     return positions
@@ -94,21 +94,21 @@ export const fetchUserPositions = async ({ address, limit = 100 }) => {
     })
 
     // Fetch liquidity provisions
-    const { liquidityProvisions } = await flameWager.gql.query({
-      liquidityProvisions: [
+    const { deposits } = await flameWager.gql.query({
+      deposits: [
         {
           where: { provider: { address: { _eq: address } } },
           order_by: { timestamp: "desc" },
           limit,
         },
-        liquidityProvision,
+        deposit,
       ],
     })
 
     // Combine and sort by timestamp
     const positions = [
       ...(bets || []).map(b => ({ ...b, type: "bet" })),
-      ...(liquidityProvisions || []).map(lp => ({ ...lp, type: "liquidity" })),
+      ...(deposits || []).map(lp => ({ ...lp, type: "liquidity" })),
     ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
 
     return positions
@@ -147,8 +147,8 @@ export const fetchActivePositions = async ({ address }) => {
     })
 
     // Fetch active liquidity provisions
-    const { liquidityProvisions } = await flameWager.gql.query({
-      liquidityProvisions: [
+    const { deposits } = await flameWager.gql.query({
+      deposits: [
         {
           where: {
             provider: { address: { _eq: address } },
@@ -156,14 +156,14 @@ export const fetchActivePositions = async ({ address }) => {
           },
           order_by: { timestamp: "desc" },
         },
-        liquidityProvision,
+        deposit,
       ],
     })
 
     // Combine
     const positions = [
       ...(bets || []).map(b => ({ ...b, type: "bet" })),
-      ...(liquidityProvisions || []).map(lp => ({ ...lp, type: "liquidity" })),
+      ...(deposits || []).map(lp => ({ ...lp, type: "liquidity" })),
     ]
 
     return positions
@@ -207,8 +207,8 @@ export const fetchPositionForEvent = async ({ address, eventId }) => {
     }
 
     // Check for liquidity provision
-    const { liquidityProvisions } = await flameWager.gql.query({
-      liquidityProvisions: [
+    const { deposits } = await flameWager.gql.query({
+      deposits: [
         {
           where: {
             provider: { address: { _eq: address } },
@@ -216,12 +216,12 @@ export const fetchPositionForEvent = async ({ address, eventId }) => {
           },
           limit: 1,
         },
-        liquidityProvision,
+        deposit,
       ],
     })
 
-    if (liquidityProvisions?.length > 0) {
-      return { ...liquidityProvisions[0], type: "liquidity" }
+    if (deposits?.length > 0) {
+      return { ...deposits[0], type: "liquidity" }
     }
 
     return null
