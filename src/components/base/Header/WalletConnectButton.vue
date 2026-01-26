@@ -14,32 +14,32 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useWalletStore } from '@/store/wallet';
+import { useAccountStore } from '@/store/account';
 import { activeChainConfig } from '@config';
 
-const walletStore = useWalletStore();
+const accountStore = useAccountStore();
 
 // Computed properties
-const isConnected = computed(() => walletStore.isConnected);
-const isConnecting = computed(() => walletStore.isConnecting);
+const isConnected = computed(() => accountStore.isConnected);
+const isConnecting = computed(() => accountStore.isConnecting);
 const balance = computed(() => 
-  Number(walletStore.balance).toFixed(4)
+  Number(accountStore.balance).toFixed(4)
 );
-const networkName = computed(() => walletStore.networkName);
-const isCorrectNetwork = computed(() => walletStore.chainId === 912559); // Flame devnet
+const networkName = computed(() => accountStore.networkName);
+const isCorrectNetwork = computed(() => accountStore.chainId === 912559); // Flame devnet
 
 const shortAddress = computed(() => {
-  if (!walletStore.pkh) return '';
-  return `${walletStore.pkh.substring(0, 6)}...${walletStore.pkh.substring(38)}`;
+  if (!accountStore.pkh) return '';
+  return `${accountStore.pkh.substring(0, 6)}...${accountStore.pkh.substring(38)}`;
 });
 
 // Methods
 const connect = () => {
-  walletStore.connectWallet();
+  accountStore.connectWallet();
 };
 
 const disconnect = () => {
-  walletStore.logout();
+  accountStore.logout();
 };
 </script>
 

@@ -17,7 +17,7 @@ import { analytics } from "@sdk"
 /**
  * Store
  */
-import { useWalletStore } from "@store/wallet"
+import { useAccountStore } from "@store/account"
 import { useNotificationsStore } from "@store/notifications"
 
 /**
@@ -25,7 +25,7 @@ import { useNotificationsStore } from "@store/notifications"
  */
 import { activeChainConfig } from "@config"
 
-const walletStore = useWalletStore()
+const accountStore = useAccountStore()
 const notificationsStore = useNotificationsStore()
 
 const router = useRouter()
@@ -44,7 +44,7 @@ const handleOpenWithdrawals = () => {
 
 const handleLogout = () => {
 	/** confirmation.request -> onConfirm -> callback */
-	walletStore.logout()
+	accountStore.logout()
 	location.reload()
 	notificationsStore.create({
 		notification: {
@@ -81,7 +81,7 @@ const handleLogout = () => {
 						tabindex="1"
 					>
 						<img
-							:src="`https://services.tzkt.io/v1/avatars/${walletStore.pkh}`"
+							:src="`https://services.tzkt.io/v1/avatars/${accountStore.pkh}`"
 							alt="avatar"
 						/>
 
@@ -90,7 +90,7 @@ const handleLogout = () => {
 								My Profile
 							</Text>
 							<Text size="11" weight="600" color="tertiary">
-								{{ shorten(walletStore.pkh, 8, 5) }}
+								{{ shorten(accountStore.pkh, 8, 5) }}
 							</Text>
 						</Flex>
 					</Flex>
@@ -109,7 +109,7 @@ const handleLogout = () => {
 								<Flex>
 									{{
 										numberWithSymbol(
-											walletStore.balance,
+											accountStore.balance,
 											",",
 										)
 									}}&nbsp;

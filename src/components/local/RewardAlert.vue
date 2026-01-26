@@ -9,7 +9,7 @@ import { numberWithSymbol } from "@utils/amounts"
 /**
  * Store
  */
-import { useWalletStore } from "@store/wallet"
+import { useAccountStore } from "@store/account"
 
 /**
  * UI
@@ -21,10 +21,10 @@ import Tooltip from "@ui/Tooltip.vue"
  */
 import { activeChainConfig } from "@config"
 
-const walletStore = useWalletStore()
+const accountStore = useAccountStore()
 
 const reward = computed(() => {
-	const total = walletStore.rewards.reduce(
+	const total = accountStore.rewards.reduce(
 		(acc, curr) => (acc += curr.value),
 		0,
 	)
@@ -33,7 +33,7 @@ const reward = computed(() => {
 </script>
 
 <template>
-	<router-link v-if="walletStore.wonPositions?.length" to="/withdrawals">
+	<router-link v-if="accountStore.wonPositions?.length" to="/withdrawals">
 		<Tooltip placement="left">
 			<Flex align="center" gap="8" :class="$style.wrapper">
 				<Icon name="coins" size="14" color="green" />

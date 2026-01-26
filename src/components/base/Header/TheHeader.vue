@@ -35,10 +35,10 @@ import WalletConnectButton from "./WalletConnectButton.vue"
  * Store
  */
 import { useAppStore } from "@store/app"
-import { useWalletStore } from "@store/wallet"
+import { useAccountStore } from "@store/account"
 
 const appStore = useAppStore()
-const walletStore = useWalletStore()
+const accountStore = useAccountStore()
 
 const route = useRoute()
 const router = useRouter()
@@ -80,7 +80,7 @@ const isActive = (linkName) => {
 	}
 }
 
-const pkh = computed(() => walletStore.pkh)
+const pkh = computed(() => accountStore.pkh)
 
 // const handleNetworkDblClick = () => {
 // 	juster.sdk._provider.client.clearActiveAccount().then(async () => {

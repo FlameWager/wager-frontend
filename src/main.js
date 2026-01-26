@@ -2,7 +2,7 @@
 import { createApp, h } from "vue"
 import { createMetaManager } from "vue-meta"
 import { createPinia } from "pinia"
-import { useWalletStore } from './store/wallet';
+import { useAccountStore } from './store/account';
 
 // Import modules.
 import { VueQueryPlugin } from '@tanstack/vue-query';
@@ -56,8 +56,8 @@ app.component("Text", Text)
 /**
  * Initialize wallet connection
  */
-const walletStore = useWalletStore();
+const accountStore = useAccountStore();
 // Initialize wallet after Wagmi is set up
 app.mount("#app")
 // Initialize wallet after the app is mounted
-walletStore.init();
+accountStore.init();

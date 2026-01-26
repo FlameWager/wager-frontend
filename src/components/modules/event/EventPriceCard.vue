@@ -41,7 +41,7 @@ const finishTimeText = computed(() => {
 
 					<div v-if="event.status == 'NEW'" :class="$style.price">TBD</div>
 					<div v-else :class="$style.price">
-						{{ disaggregate(event.startRate * 100)[0] }}.<span>{{ disaggregate(event.startRate * 100)[1] }}</span>
+						<!-- {{ disaggregate(event.startRate * 100)[0] }}.<span>{{ disaggregate(event.startRate * 100)[1] }}</span> -->
 					</div>
 				</div>
 

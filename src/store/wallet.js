@@ -41,10 +41,8 @@ export const useWalletStore = defineStore({
       if (!state.chainId) return 'Not Connected';
       
       switch (state.chainId) {
-        case 912559:
-          return "Flame Devnet";
-        case 16604737732183:
-          return "Flame Testnet";
+        case 127823:
+          return "Etherlink Shadownet";
         default:
           return 'Unknown Network';
       }
