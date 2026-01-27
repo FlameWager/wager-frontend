@@ -90,14 +90,14 @@ const handleJoin = () => {
 
 					<div :class="$style.param">
 						<span>TVL:</span>
-						<span>{{ abbreviateNumber(market.totalValueLocked.toFixed(0)) }} ꜩ</span>
+						<!-- <span>{{ abbreviateNumber(market.totalValueLocked.toFixed(0)) }} ꜩ</span> -->
 					</div>
 
 					<div :class="$style.dot" />
 
 					<div :class="$style.param">
 						<span>Volume (24h):</span>
-						<span>{{ abbreviateNumber(market.totalVolume.toFixed(0)) }} ꜩ</span>
+						<!-- <span>{{ abbreviateNumber(market.totalVolume.toFixed(0)) }} ꜩ</span> -->
 					</div>
 				</div>
 			</div>

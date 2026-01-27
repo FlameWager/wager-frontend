@@ -4,7 +4,16 @@
  */
 
 import { flameWager } from "@/services/sdk"
-import { currencyPair as currencyPairModel, currencyPairStatistics } from "@/graphql/models"
+import { pipe, subscribe } from "wonka"
+import {
+  MARKETS_QUERY,
+  MARKET_BY_SYMBOL_QUERY,
+  MARKET_BY_ID_QUERY,
+  MARKET_STATISTICS_QUERY,
+  MARKETS_WITH_ACTIVE_EVENTS_QUERY,
+  MARKET_PRICE_SUBSCRIPTION,
+} from "@/graphql/markets"
+import { executeQuery } from "./graphql"
 
 /**
  * Fetch all markets/currency pairs
@@ -12,16 +21,8 @@ import { currencyPair as currencyPairModel, currencyPairStatistics } from "@/gra
  */
 export const fetchMarkets = async () => {
   try {
-    const { currencyPairs } = await flameWager.gql.query({
-      currencyPairs: [
-        {
-          order_by: { totalVolume: "desc" },
-        },
-        currencyPairModel,
-      ],
-    })
-
-    return currencyPairs || []
+    const data = await executeQuery(MARKETS_QUERY)
+    return data?.currencyPair || []
   } catch (error) {
     console.error(
       `Error fetching markets: ${error.name}: ${error.message}`
@@ -41,17 +42,8 @@ export const fetchMarketBySymbol = async (symbol) => {
       throw new Error("Symbol is required")
     }
 
-    const { currencyPairs } = await flameWager.gql.query({
-      currencyPairs: [
-        {
-          where: { symbol: { _eq: symbol } },
-          limit: 1,
-        },
-        currencyPairModel,
-      ],
-    })
-
-    return currencyPairs?.[0] || null
+    const data = await executeQuery(MARKET_BY_SYMBOL_QUERY, { symbol })
+    return data?.currencyPair?.[0] || null
   } catch (error) {
     console.error(
       `Error fetching market ${symbol}: ${error.name}: ${error.message}`
@@ -71,16 +63,8 @@ export const fetchMarketById = async (id) => {
       throw new Error("Market ID is required")
     }
 
-    const { currencyPairsByPk } = await flameWager.gql.query({
-      currencyPairsByPk: [
-        {
-          id,
-        },
-        currencyPairModel,
-      ],
-    })
-
-    return currencyPairsByPk || null
+    const data = await executeQuery(MARKET_BY_ID_QUERY, { id })
+    return data?.currencyPairByPk || null
   } catch (error) {
     console.error(
       `Error fetching market ${id}: ${error.name}: ${error.message}`
@@ -95,16 +79,8 @@ export const fetchMarketById = async (id) => {
  */
 export const fetchMarketStatistics = async () => {
   try {
-    const { currencyPairStatistics: stats } = await flameWager.gql.query({
-      currencyPairStatistics: [
-        {
-          order_by: { totalVolume: "desc" },
-        },
-        currencyPairStatistics,
-      ],
-    })
-
-    return stats || []
+    const data = await executeQuery(MARKET_STATISTICS_QUERY)
+    return data?.currencyPairStatistics || []
   } catch (error) {
     console.error(
       `Error fetching market statistics: ${error.name}: ${error.message}`
@@ -121,33 +97,40 @@ export const fetchMarketStatistics = async () => {
  */
 export const subscribeToMarketPrice = (symbol, onUpdate) => {
   try {
-    return flameWager.gql
-      .subscription({
-        currencyPairs: [
-          {
-            where: { symbol: { _eq: symbol } },
-          },
-          {
-            currentPrice: true,
-            lastPriceUpdate: true,
-          },
-        ],
+    if (!symbol) {
+      throw new Error("Symbol is required")
+    }
+
+    if (typeof onUpdate !== 'function') {
+      throw new Error("onUpdate callback is required")
+    }
+
+    if (!flameWager.gql) {
+      console.warn("GraphQL client not initialized")
+      return { unsubscribe: () => { } }
+    }
+
+    // Use Wonka pipe and subscribe for URQL subscriptions
+    const { unsubscribe } = pipe(
+      flameWager.gql.subscription(MARKET_PRICE_SUBSCRIPTION, { symbol }),
+      subscribe((result) => {
+        if (result.error) {
+          console.error("Market price subscription error:", result.error)
+          return
+        }
+
+        if (result?.data?.currencyPair?.[0]) {
+          onUpdate(result.data.currencyPair[0])
+        }
       })
-      .subscribe({
-        next: (data) => {
-          if (data.currencyPairs?.[0]) {
-            onUpdate(data.currencyPairs[0])
-          }
-        },
-        error: (error) => {
-          console.error(`Market price subscription error: ${error}`)
-        },
-      })
+    )
+
+    return { unsubscribe }
   } catch (error) {
     console.error(
       `Error subscribing to market price ${symbol}: ${error.name}: ${error.message}`
     )
-    return { unsubscribe: () => {} }
+    return { unsubscribe: () => { } }
   }
 }
 
@@ -157,31 +140,8 @@ export const subscribeToMarketPrice = (symbol, onUpdate) => {
  */
 export const fetchMarketsWithActiveEvents = async () => {
   try {
-    const { currencyPairs } = await flameWager.gql.query({
-      currencyPairs: [
-        {
-          where: {
-            events: { status: { _eq: "NEW" } },
-          },
-          order_by: { totalVolume: "desc" },
-        },
-        {
-          ...currencyPairModel,
-          events_aggregate: [
-            {
-              where: { status: { _eq: "NEW" } },
-            },
-            {
-              aggregate: {
-                count: true,
-              },
-            },
-          ],
-        },
-      ],
-    })
-
-    return currencyPairs || []
+    const data = await executeQuery(MARKETS_WITH_ACTIVE_EVENTS_QUERY)
+    return data?.currencyPair || []
   } catch (error) {
     console.error(
       `Error fetching markets with active events: ${error.name}: ${error.message}`

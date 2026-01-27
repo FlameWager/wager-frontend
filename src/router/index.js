@@ -34,6 +34,16 @@ const routes = [
   //   name: 'MyBets',
   //   component: MyBets
   // }
+  {
+		path: "/markets/:id",
+		name: "Market",
+		component: () => import("@views/MarketPage.vue"),
+	},
+  {
+    path: "/markets",
+    name: "Markets",
+    component: () => import("@views/MarketsPage.vue"),
+  }
 ]
 
 const router = createRouter({

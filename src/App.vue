@@ -28,6 +28,82 @@ import Footer from "@base/Footer.vue"
 import Notifications from "@local/Notifications.vue"
 // import ConfirmationModal from "@local/modals/ConfirmationModal.vue"
 
+
+/**
+ * Services
+ */
+import { flameWager, initPools, currentNetwork } from "@sdk"
+// import { fetchAllPools, fetchPoolsLines } from "@/api/pools"
+// import { watchNetwork } from "@/services/network"
+
+/**
+ * Store
+ */
+import { useAccountStore } from "@store/account"
+import { useAppStore } from "@store/app"
+import { useMarketStore } from "@store/market"
+
+/**
+ * Composable
+ */
+import { useMarket } from "@/composable/market"
+
+const { setupMarket, setupUser } = useMarket()
+
+/** Favicon */
+const favicon = document.getElementById("favicon")
+const isDark = window.matchMedia("(prefers-color-scheme: dark)")
+
+if (isDark.matches) favicon.href = "/favicon_dark.svg"
+else favicon.href = "/favicon_light.svg"
+
+const accountStore = useAccountStore()
+const appStore = useAppStore()
+const marketStore = useMarketStore()
+
+// onBeforeMount(() => {
+// 	flameWager.sdk._provider.client.getActiveAccount().then(async (account) => {
+// 		if (!account) return
+
+// 		accountStore.setPkh(account.address)
+// 		accountStore.updateBalance()
+
+// 		setupUser()
+// 	})
+// })
+// onMounted(async () => {
+// 	watchNetwork()
+
+// 	document.addEventListener("keydown", (e) => {
+// 		if (e.key === "Enter") {
+// 			const { activeElement } = document
+// 			if (activeElement.tagName.toLowerCase() === "a") return
+// 			activeElement.click()
+// 		}
+// 	})
+
+// 	setupPools()
+// })
+
+// /** Network Watcher */
+// watch(
+// 	() => currentNetwork.value,
+// 	() => {
+// 		setupPools()
+// 	},
+// )
+
+// const setupPools = async () => {
+// 	marketStore.pools = await fetchAllPools()
+// 	initPools(marketStore.pools)
+
+// 	marketStore.lines = await fetchPoolsLines()
+// }
+
+/**
+ * Setup Market (Markets & Quotes & Subscriptinos)
+ */
+setupMarket()
 </script>
 
 <template>

@@ -47,7 +47,7 @@ useMeta({
 	<div :class="$style.wrapper">
 		<metainfo>
 			<template v-slot:title="{ content }"
-				>{{ content }} • Juster</template
+				>{{ content }} • Wager</template
 			>
 		</metainfo>
 

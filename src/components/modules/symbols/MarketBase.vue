@@ -50,7 +50,7 @@ const marketStore = useMarketStore()
 const market = computed(() => {
 	return Object.keys(marketStore.markets)
 		.map((item) => marketStore.markets[item])
-		.find((item) => item.symbol == route.params.name)
+		.find((item) => item.symbol == route.params.id)
 })
 const price = computed(() => marketStore.markets[market.value?.symbol]?.quotes[0]?.price)
 
@@ -61,7 +61,7 @@ const selectTab = (tab) => {
 }
 
 const events = computed(() => marketStore.events)
-
+console.log(marketStore)
 const getEvents = async ({ status }) => {
 	marketStore.events = []
 
@@ -126,7 +126,7 @@ onMounted(() => {
 	analytics.log("onPage", { name: "Market" })
 
 	if (price.value) {
-		meta.title = `${market.value.symbol} • ${price.value.toFixed(2)}`
+		// meta.title = `${market.value.symbol} • ${price.value.toFixed(2)}`
 	}
 })
 
@@ -144,7 +144,7 @@ const { meta } = useMeta({
 <template>
 	<div v-if="market" :class="$style.wrapper">
 		<metainfo>
-			<template v-slot:title="{ content }">{{ content }} • Juster</template>
+			<template v-slot:title="{ content }">{{ content }} • Wager</template>
 		</metainfo>
 
 		<Breadcrumbs :crumbs="breadcrumbs" :class="$style.breadcrumbs" />
