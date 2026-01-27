@@ -9,6 +9,7 @@ import {
   getContractAddresses,
 } from "./flameWager"
 import analytics from "./analytics"
+import { withdraw, withdrawAll } from "./withdraw"
 
 /**
  * Utility function to fetch balance for a given address
@@ -45,4 +46,6 @@ export {
   placeBet,
   initWithSigner,
   analytics,
+  withdraw,
+  withdrawAll
 }

@@ -1,5 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+/**
+ * Store
+ */
+import { useAppStore } from "@store/app"
+import { useAccountStore } from "@store/account"
+
 // Lazy-load routes
 const Home = () => import('../views/Home.vue')
 const Events = () => import('../views/EventsPage.vue')
@@ -43,12 +49,36 @@ const routes = [
     path: "/markets",
     name: "Markets",
     component: () => import("@views/MarketsPage.vue"),
-  }
+  },
+  {
+		path: "/withdrawals",
+		name: "Withdrawals",
+		beforeEnter: (to, from, next) => {
+			const accountStore = useAccountStore()
+			if (accountStore.isLoggined) {
+				next()
+			} else {
+				next({ name: "Explore" })
+			}
+		},
+		component: () => import("@views/WithdrawalsPage.vue"),
+	},
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes
+	history: createWebHistory(import.meta.env.BASE_URL),
+	routes,
+	scrollBehavior() {
+		return { top: 0 }
+	},
+})
+
+router.beforeEach((target, prev, next) => {
+	const appStore = useAppStore()
+
+	if (prev.name) appStore.prevRoute = prev
+
+	next()
 })
 
 export default router 
