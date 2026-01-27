@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
 
 				<div :class="$style.columns">
 					<div :class="$style.column">
-						<div :class="$style.name">FlameWager</div>
+						<div :class="$style.name">Wager</div>
 
 						<router-link to="/" :class="$style.link">Explore</router-link>
 						<router-link to="/events" :class="$style.link">Events</router-link>
@@ -238,7 +238,7 @@ onBeforeUnmount(() => {
 					<Flex align="center" wrap="wrap" :class="$style.line">
 						<Text size="14" weight="500" color="tertiary"> © {{ DateTime.now().year }}&nbsp;&nbsp; </Text>
 						<Text size="11" color="support">✦</Text>
-						<Text size="14" weight="500" color="secondary"> &nbsp;&nbsp;FlameWager&nbsp; </Text>
+						<Text size="14" weight="500" color="secondary"> &nbsp;&nbsp;Wager&nbsp; </Text>
 						<Text size="14" weight="500" color="tertiary"> Market data provided by&nbsp; </Text>
 						<a href="https://tzkt.io/KT1AdbYiPYb5hDuEuVrfxmFehtnBCXv4Np7r/operations/" target="_blank">
 							<Text size="14" weight="500" color="secondary"> Chainlink Oracle </Text>
