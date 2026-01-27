@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
 							<Button
 								type="secondary"
 								size="small"
-								link="https://status.juster.fi"
+								link="https://status.wager.com"
 								:class="[$style.footer_btn, $style[statusBlock.color]]"
 							>
 								<Icon :name="(statusBlock.color === 'green' && 'checkcircle') || 'warning'" size="14" :class="$style" />
