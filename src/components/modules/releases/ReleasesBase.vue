@@ -42,18 +42,18 @@ onMounted(async () => {
 		<div :class="$style.base">
 			<h1 :class="$style.title">What's New</h1>
 			<div :class="$style.description">
-				Join our Discord or Twitter to keep up with new updates
+				Join our Discord or X to keep up with new updates
 			</div>
 
 			<div :class="$style.buttons">
-				<a href="https://discord.gg/FeGDCkHhnB" target="_blank">
+				<!-- <a href="https://discord.gg/FeGDCkHhnB" target="_blank">
 					<Button type="secondary" size="small">
 						<Icon name="discord" size="16" />Discord Server
 					</Button>
-				</a>
-				<a href="https://twitter.com/Juster_fi" target="_blank">
+				</a> -->
+				<a href="https://x.com/wagerEtherlink" target="_blank">
 					<Button type="secondary" size="small">
-						<Icon name="twitter" size="16" />Twitter
+						<Icon name="twitter" size="16" />TwitXter
 					</Button>
 				</a>
 			</div>

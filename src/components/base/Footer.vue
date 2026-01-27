@@ -219,18 +219,18 @@ onBeforeUnmount(() => {
 					</div>
 
 					<div :class="$style.right">
-						<Button type="secondary" size="small" link="https://discord.gg/FeGDCkHhnB" :class="$style.footer_btn">
+						<!-- <Button type="secondary" size="small" link="https://discord.gg/FeGDCkHhnB" :class="$style.footer_btn">
 							Discord
 							<Icon name="arrowrighttop" size="16" color="tertiary" />
-						</Button>
-						<Button type="secondary" size="small" link="https://twitter.com/Juster_fi" :class="$style.footer_btn">
-							Twitter
+						</Button> -->
+						<Button type="secondary" size="small" link="https://x.com/wagerEtherlink" :class="$style.footer_btn">
+							X
 							<Icon name="arrowrighttop" size="16" color="tertiary" />
 						</Button>
-						<Button type="secondary" size="small" link="https://github.com/juster-finance" :class="$style.footer_btn">
+						<!-- <Button type="secondary" size="small" link="https://github.com/juster-finance" :class="$style.footer_btn">
 							GitHub
 							<Icon name="arrowrighttop" size="16" color="tertiary" />
-						</Button>
+						</Button> -->
 					</div>
 				</div>
 

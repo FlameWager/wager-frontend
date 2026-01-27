@@ -138,7 +138,7 @@ const getImageUrl = (image) => {
 				<HeaderAnchor h="2">Community</HeaderAnchor>
 
 				<p>
-					Join our community (Discord, Twitter, GitHub). Communicate
+					Join our community (Discord, X, GitHub). Communicate
 					with other users, analyze the market, make joint bets.
 					Working together can improve your results. Also, we
 					regularly publish release notes.

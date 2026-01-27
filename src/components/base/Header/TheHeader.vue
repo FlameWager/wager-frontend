@@ -193,18 +193,18 @@ const pkh = computed(() => accountStore.pkh)
 
 								<div :class="$style.mobile_menu__description">Detailed list of all changes</div>
 							</router-link>
-							<a href="https://discord.gg/FeGDCkHhnB" target="_blank" :class="$style.mobile_menu__link">
+							<!-- <a href="https://discord.gg/FeGDCkHhnB" target="_blank" :class="$style.mobile_menu__link">
 								<div :class="$style.left">
 									<Icon name="discord" size="14" />
 									<span>Discord</span>
 								</div>
 
 								<div :class="$style.mobile_menu__description">Communication and discussion</div>
-							</a>
-							<a href="https://twitter.com/Juster_fi" target="_blank" :class="$style.mobile_menu__link">
+							</a> -->
+							<a href="https://x.com/wagerEtherlink" target="_blank" :class="$style.mobile_menu__link">
 								<div :class="$style.left">
 									<Icon name="twitter" size="14" />
-									<span>Twitter</span>
+									<span>X</span>
 								</div>
 
 								<div :class="$style.mobile_menu__description">Latest news and updates</div>

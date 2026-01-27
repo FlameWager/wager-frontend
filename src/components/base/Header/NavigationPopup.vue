@@ -63,12 +63,12 @@ const resourcesLinks = ref([
 		description: "Explore the product path",
 		url: "/docs/roadmap",
 	},
-	{
-		icon: "github",
-		title: "Source Code",
-		description: "Explore our code & Contribute",
-		url: "https://github.com/juster-finance",
-	},
+	// {
+	// 	icon: "github",
+	// 	title: "Source Code",
+	// 	description: "Explore our code & Contribute",
+	// 	url: "https://github.com/juster-finance",
+	// },
 ])
 
 const communityLinks = ref([
@@ -84,17 +84,17 @@ const communityLinks = ref([
 		description: "Detailed list of all changes",
 		url: "/releases",
 	},
-	{
-		icon: "discord",
-		title: "Discord",
-		description: "Communication and discussion",
-		url: "https://discord.gg/FeGDCkHhnB",
-	},
+	// {
+	// 	icon: "discord",
+	// 	title: "Discord",
+	// 	description: "Communication and discussion",
+	// 	url: "https://discord.gg/FeGDCkHhnB",
+	// },
 	{
 		icon: "twitter",
-		title: "Twitter",
+		title: "X",
 		description: "Latest news and updates",
-		url: "https://twitter.com/Juster_fi",
+		url: "https://x.com/wagerEtherlink",
 	},
 ])
 
