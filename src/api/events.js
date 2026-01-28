@@ -11,6 +11,14 @@ const transformEvent = (event) => {
   if (!event) return null
   return {
     ...event,
+    poolAboveEq: Number(event.poolAboveEq || 0),
+    poolBelow: Number(event.poolBelow || 0),
+    totalLiquidityShares: Number(event.totalLiquidityShares || 0),
+    totalBetsAmount: Number(event.totalBetsAmount || 0),
+    totalLiquidityProvided: Number(event.totalLiquidityProvided || 0),
+    totalValueLocked: Number(event.totalValueLocked || 0),
+    startRate: Number(event.startRate || 0),
+    closedRate: Number(event.closedRate || 0),
     creatorId: event.creator?.address,
     bets: event.bets || [],
     deposits: event.deposits || [],

@@ -40,11 +40,11 @@ const props = defineProps({
 const accountStore = useAccountStore()
 
 const bvl = computed(() =>
-	props.userBets.reduce((acc, { amount }) => (acc += amount), 0),
+	props.userBets.reduce((acc, { amount }) => (acc += Number(amount)), 0),
 )
 const dvl = computed(() => {
 	return props.userDeposits.reduce(
-		(acc, { amountAboveEq }) => (acc += amountAboveEq),
+		(acc, { amountAboveEq }) => (acc += Number(amountAboveEq)),
 		0,
 	)
 })
@@ -54,10 +54,10 @@ const returnOnBets = computed(() => {
 
 	if (props.event.status == "FINISHED") {
 		reward = props.userBets.reduce((acc, { side, reward }) => {
-			return side == props.event.winnerBets ? (acc += reward) : acc
+			return side == props.event.winnerBets ? (acc += Number(reward)) : acc
 		}, 0)
 	} else {
-		reward = props.userBets.reduce((acc, { reward }) => (acc += reward), 0)
+		reward = props.userBets.reduce((acc, { reward }) => (acc += Number(reward)), 0)
 	}
 
 	return reward
@@ -65,7 +65,7 @@ const returnOnBets = computed(() => {
 
 const potentialProfit = computed(() =>
 	props.userBets.reduce(
-		(acc, { amount, reward }) => (acc += reward - amount),
+		(acc, { amount, reward }) => (acc += Number(reward) - Number(amount)),
 		0,
 	),
 )
@@ -74,11 +74,11 @@ const profitOnFinish = computed(() => {
 	if (!props.position) return 0
 
 	const liquidity = Math.max(
-		props.position.liquidityProvidedAboveEq,
-		props.position.liquidityProvidedBelow,
+		Number(props.position.liquidityProvidedAboveEq),
+		Number(props.position.liquidityProvidedBelow),
 	)
 
-	const profit = props.position.value - bvl.value - liquidity
+	const profit = Number(props.position.value) - bvl.value - liquidity
 
 	if (isNaN(profit)) return 0
 

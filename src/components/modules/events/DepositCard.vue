@@ -28,8 +28,16 @@ const props = defineProps({
 
 const showOperationModal = ref(false)
 
+const amountAboveEq = computed(() => Number(props.deposit.amountAboveEq || 0))
+const amountBelow = computed(() => Number(props.deposit.amountBelow || 0))
+const shares = computed(() => Number(props.deposit.shares || 0))
+
+const poolAboveEq = computed(() => Number(props.event.poolAboveEq || 0))
+const poolBelow = computed(() => Number(props.event.poolBelow || 0))
+const totalLiquidityShares = computed(() => Number(props.event.totalLiquidityShares || 1))
+
 const aboveEqProfit = computed(() => {
-	let profit = (props.event.poolBelow * props.deposit.shares) / props.event.totalLiquidityShares - props.deposit.amountAboveEq
+	let profit = (poolBelow.value * shares.value) / totalLiquidityShares.value - amountAboveEq.value
 
 	if (profit > 0) {
 		profit = profit * (1 - 0.01)
@@ -38,7 +46,7 @@ const aboveEqProfit = computed(() => {
 	return profit
 })
 const belowProfit = computed(() => {
-	let profit = (props.event.poolAboveEq * props.deposit.shares) / props.event.totalLiquidityShares - props.deposit.amountBelow
+	let profit = (poolAboveEq.value * shares.value) / totalLiquidityShares.value - amountBelow.value
 
 	if (profit > 0) {
 		profit = profit * (1 - 0.01)
@@ -47,9 +55,12 @@ const belowProfit = computed(() => {
 	return profit
 })
 
+const formattedAmountAboveEq = computed(() => amountAboveEq.value.toFixed(2))
+const formattedAmountBelow = computed(() => amountBelow.value.toFixed(2))
+
 const returnForLiquidity = computed(() => {
-	if (props.event.winnerBets == "ABOVE_EQ") return aboveEqProfit.value + props.deposit.amountAboveEq
-	if (props.event.winnerBets == "BELOW") return belowProfit.value + props.deposit.amountBelow
+	if (props.event.winnerBets == "ABOVE_EQ") return aboveEqProfit.value + amountAboveEq.value
+	if (props.event.winnerBets == "BELOW") return belowProfit.value + amountBelow.value
 
 	return 0
 })
@@ -93,7 +104,7 @@ const returnForLiquidity = computed(() => {
 		<!-- Desktop Template -->
 		<div :class="$style.desktop">
 			<div :class="[$style.param, $style.up]">
-				{{ numberWithSymbol(deposit.amountAboveEq.toFixed(0), ",") }}&nbsp;<span>XTZ</span>
+				{{ numberWithSymbol(formattedAmountAboveEq, ",") }}&nbsp;<span>XTZ</span>
 			</div>
 
 			<div v-if="event.status == 'FINISHED' && returnForLiquidity" :class="[$style.param]">
@@ -111,7 +122,7 @@ const returnForLiquidity = computed(() => {
 				<div :class="$style.key">Rise</div>
 
 				<div :class="$style.value">
-					<Icon name="arrow_circle_top_right" size="12" />{{ numberWithSymbol(deposit.amountAboveEq.toFixed(0), ",") }}&nbsp;<span
+					<Icon name="arrow_circle_top_right" size="12" />{{ numberWithSymbol(formattedAmountAboveEq, ",") }}&nbsp;<span
 						>XTZ</span
 					>
 				</div>
@@ -121,7 +132,7 @@ const returnForLiquidity = computed(() => {
 				<div :class="$style.key">Rise</div>
 
 				<div :class="$style.value">
-					<Icon name="arrow_circle_top_right" size="12" />{{ numberWithSymbol(deposit.amountBelow.toFixed(0), ",") }}&nbsp;<span
+					<Icon name="arrow_circle_top_right" size="12" />{{ numberWithSymbol(formattedAmountBelow, ",") }}&nbsp;<span
 						>XTZ</span
 					>
 				</div>
