@@ -10,7 +10,7 @@ export const getGraphQLUrl = () => {
     if (!graphqlConfig) {
         console.warn("GraphQL configuration not found for network:", networkKey)
         // Default to the common Hasura port from docker-compose
-        return "http://localhost:8081/v1/graphql"
+        return import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql"
     }
     return graphqlConfig.graphq || graphqlConfig.graphql
 }

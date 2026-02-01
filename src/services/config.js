@@ -89,14 +89,17 @@ export const config = createConfig({
   },
 });
 
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql";
+const GRAPHQL_WS = GRAPHQL_URL.replace(/^http/, 'ws');
+
 export const dipdup = {
   mainnet: {
-    graphql: "http://localhost:8081/v1/graphql",
-    ws: "ws://localhost:8081/v1/graphql",
+    graphql: GRAPHQL_URL,
+    ws: GRAPHQL_WS,
   },
   testnet: {
-    graphql: "http://localhost:8081/v1/graphql",
-    ws: "ws://localhost:8081/v1/graphql",
+    graphql: GRAPHQL_URL,
+    ws: GRAPHQL_WS,
   },
 }
 

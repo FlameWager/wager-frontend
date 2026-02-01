@@ -57,7 +57,8 @@ const statusBlock = computed(() => {
 })
 
 const checkDipdup = async () => {
-	const url = import.meta.env.DEV ? "http://localhost:8081/" : ""
+	const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql"
+	const url = graphqlUrl.replace("/v1/graphql", "")
 
 	if (!url) {
 		status.dipdup = STATUSES.GOOD
@@ -100,7 +101,8 @@ const checkNetwork = async () => {
 }
 
 const checkQuotes = async () => {
-	const url = import.meta.env.DEV ? "http://localhost:8081/" : ""
+	const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql"
+	const url = graphqlUrl.replace("/v1/graphql", "")
 
 	if (!url) {
 		status.quotes = STATUSES.GOOD
