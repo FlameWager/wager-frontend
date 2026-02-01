@@ -67,6 +67,10 @@ export default (ctx) => {
 		],
 		build: {
 			rollupOptions: {
+				external: [
+					'@safe-window/safe-apps-provider',
+					'@safe-window/safe-apps-sdk',
+				],
 				plugins: [
 					// ↓ Needed for build
 					nodePolyfills()
@@ -91,7 +95,9 @@ export default (ctx) => {
 			alias: {
 				...aliases,
 				'@safe-window/safe-apps-provider':
-        			'@safe-window/safe-apps-provider',
+					'@safe-global/safe-apps-provider',
+				'@safe-window/safe-apps-sdk':
+					'@safe-global/safe-apps-sdk',
 				"@airgap/beacon-dapp": path.resolve(
 					__dirname,
 					`./node_modules/@airgap/beacon-dapp/dist/${isBuild ? "esm" : "cjs"
