@@ -19,7 +19,7 @@ import Spin from "@ui/Spin.vue"
  * Services
  */
 import { parsePoolName, shorten } from "@utils/misc"
-import { juster, destroySubscription } from "@sdk"
+import { flameWager as juster, destroySubscription } from "@sdk"
 
 /**
  * Models

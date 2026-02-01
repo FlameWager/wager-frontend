@@ -389,3 +389,72 @@ export const currencyPairStatistics = {
   uniqueBettors: true,
   avgEventVolume: true,
 };
+
+export const poolPosition = {
+	id: true,
+	poolId: true,
+	depositedAmount: true,
+	lockedEstimateAmount: true,
+	shares: true,
+	entrySharePrice: true,
+	withdrawnAmount: true,
+	realizedProfit: true,
+	withdrawnShares: true,
+	claims: {
+		amount: true,
+		id: true,
+		withdrawn: true,
+		eventId: true,
+		poolId: true,
+		event: {
+			result: true,
+			event: {
+				betsCloseTime: true,
+				measurePeriod: true,
+			},
+		},
+	},
+	pool: {
+		name: true,
+	},
+}
+
+export const entryLiquidity = {
+	acceptTime: true,
+	amount: true,
+	poolId: true,
+	poolEntryId: true,
+	entryId: true,
+	status: true,
+	pool: {
+		name: true,
+		entryLockPeriod: true,
+		address: true,
+	},
+}
+
+export const poolState = {
+	id: true,
+	level: true,
+	action: true,
+	counter: true,
+	poolId: true,
+	activeLiquidity: true,
+	entryLiquidity: true,
+	opgHash: true,
+	sharePrice: true,
+	timestamp: true,
+	totalLiquidity: true,
+	totalLiquidityDiff: true,
+	totalShares: true,
+	withdrawableLiquidity: true,
+	affectedUserId: true,
+	affectedEntry: {
+		amount: true,
+	},
+	affectedEventId: true,
+	affectedEvent: {
+		provided: true,
+		result: true,
+	},
+}

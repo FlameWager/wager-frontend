@@ -18,7 +18,7 @@ import Tooltip from "@ui/Tooltip.vue"
 /**
  * Services
  */
-import { juster, analytics } from "@sdk"
+import { flameWager as juster, analytics } from "@sdk"
 import { sanitizeInput } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
 import { flags, updateFlag } from "@/services/flags"

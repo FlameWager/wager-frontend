@@ -19,7 +19,7 @@ import LoadingDots from "@ui/LoadingDots.vue"
 /**
  * Services
  */
-import { juster, analytics } from "@sdk"
+import { flameWager as juster, analytics } from "@sdk"
 import { sanitizeInput, capitalizeFirstLetter, parsePoolName } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
 

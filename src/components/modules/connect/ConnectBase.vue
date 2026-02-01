@@ -21,7 +21,7 @@ import CustomLoginModal from "@local/modals/CustomLoginModal.vue"
 /**
  * Services
  */
-import { juster, analytics, currentNetwork } from "@sdk"
+import { flameWager as juster, analytics, currentNetwork } from "@sdk"
 
 /**
  * Composable

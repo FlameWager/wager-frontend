@@ -46,7 +46,7 @@ import { useAccountStore } from "@store/account"
 /**
  * Services
  */
-import { juster, analytics } from "@sdk"
+import { flameWager as juster, analytics } from "@sdk"
 
 const router = useRouter()
 const route = useRoute()
