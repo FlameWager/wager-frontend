@@ -7,13 +7,13 @@ const ADDRESSES = {
   // Development addresses (hardhat)
   development: {
     JusterCore: '0xc786c862682F3CAa00f9460e5f4F672444aBA41c',
-    JusterPool: '0xeE43DaC2ED8BD96fFd4245FB4052d77808a525F0',
+    JusterPool: '0x451aCE7b6473BDecfC32f757c015bF7587893cE0',
     ChainlinkPriceOracle: '0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A'
   },
   // Testnet addresses
   testnet: {
     JusterCore: '0xc786c862682F3CAa00f9460e5f4F672444aBA41c',
-    JusterPool: '0xeE43DaC2ED8BD96fFd4245FB4052d77808a525F0',
+    JusterPool: '0x451aCE7b6473BDecfC32f757c015bF7587893cE0',
     ChainlinkPriceOracle: '0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A'
   },
   // Mainnet addresses
