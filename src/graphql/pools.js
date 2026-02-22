@@ -1,4 +1,60 @@
-import { event } from "./events"
+import { event } from "./models"
+
+// ============================================================================
+// Pool Queries
+// ============================================================================
+
+/**
+ * Fetch all pools
+ */
+export const ALL_POOLS_QUERY = `
+  query AllPools {
+    pool(order_by: { address: asc }) {
+      address
+      name
+      version
+      isDepositPaused
+      entryLockPeriod
+      poolLines(order_by: { lineId: asc }) {
+        poolLineId
+        lineId
+        poolId
+        currencyPairId
+        measurePeriod
+        maxEvents
+        isPaused
+      }
+    }
+  }
+`
+
+/**
+ * Fetch all pool lines
+ */
+export const POOL_LINES_QUERY = `
+  query PoolLines {
+    poolLine(order_by: [{ poolId: asc }, { lineId: asc }]) {
+      poolLineId
+      lineId
+      poolId
+      currencyPairId
+      pool {
+        address
+        name
+      }
+      currencyPair {
+        id
+        symbol
+      }
+      targetDynamics
+      measurePeriod
+      liquidityPercent
+      lastBetsCloseTime
+      maxEvents
+      isPaused
+    }
+  }
+`
 
 export const pool = {
     name: true,

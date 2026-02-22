@@ -35,10 +35,8 @@ import poolABI from "@/contracts/abis/pool.json"
 const flameWager = reactive({
   provider: null,
   signer: null,
-  contracts: {
-    core: null,
-    pools: {}
-  },
+  core: null,
+  pools: {},
   address: null,
   network: NETWORK_TYPE,
   chainId: activeRpcNode.chainId,
@@ -68,7 +66,7 @@ const init = () => {
   const graphqlConfig = dipdup[networkKey]
   const addresses = getContractAddresses()
 
-  flameWager.contracts.core = markRaw(new ethers.Contract(
+  flameWager.core = markRaw(new ethers.Contract(
     addresses.wager,
     wagerABI,
     flameWager.signer
@@ -129,13 +127,13 @@ const getContractAddresses = () => {
  * Initialize pool contracts
  */
 const initPools = (pools) => {
-  if (!flameWager.signer) {
-    console.warn("Cannot initialize pools: no signer available")
-    return
-  }
+  // if (!flameWager.signer) {
+  //   console.warn("Cannot initialize pools: no signer available")
+  //   return
+  // }
 
   pools.forEach(pool => {
-    flameWager.contracts.pools[pool.address] = markRaw(new ethers.Contract(
+    flameWager.pools[pool.address] = markRaw(new ethers.Contract(
       pool.address,
       poolABI,
       flameWager.signer
@@ -166,7 +164,7 @@ const initWithSigner = async (signer, address) => {
     const addresses = getContractAddresses()
 
     if (addresses.wager) {
-      flameWager.contracts.core = markRaw(new ethers.Contract(
+      flameWager.core = markRaw(new ethers.Contract(
         addresses.wager,
         wagerABI,
         flameWager.signer
@@ -174,7 +172,7 @@ const initWithSigner = async (signer, address) => {
     }
 
     if (addresses.pool) {
-      flameWager.contracts.pools[addresses.pool] = markRaw(new ethers.Contract(
+      flameWager.pools[addresses.pool] = markRaw(new ethers.Contract(
         addresses.pool,
         poolABI,
         flameWager.signer
@@ -243,14 +241,14 @@ const destroySubscription = (sub) => {
  * @returns {Promise<ethers.TransactionResponse>}
  */
 const placeBet = async (eventId, betType, amount, minWinAmount) => {
-  if (!flameWager.contracts.core) {
+  if (!flameWager.core) {
     throw new Error("Contract not initialized. Please connect wallet first.")
   }
 
   // Convert betType string to uint8 (0 = ABOVE_EQ, 1 = BELOW)
   const betTypeNum = betType === "aboveEq" ? 0 : 1
 
-  const tx = await flameWager.contracts.core.placeBet(
+  const tx = await flameWager.core.placeBet(
     eventId,
     betTypeNum,
     minWinAmount,

@@ -33,8 +33,8 @@ import Notifications from "@local/Notifications.vue"
  * Services
  */
 import { flameWager, initPools, currentNetwork } from "@sdk"
-// import { fetchAllPools, fetchPoolsLines } from "@/api/pools"
-// import { watchNetwork } from "@/services/network"
+import { fetchAllPools, fetchPoolsLines } from "@/api/pools"
+import { watchNetwork } from "@/services/network"
 
 /**
  * Store
@@ -71,34 +71,34 @@ const marketStore = useMarketStore()
 // 		setupUser()
 // 	})
 // })
-// onMounted(async () => {
-// 	watchNetwork()
+onMounted(async () => {
+	watchNetwork()
 
-// 	document.addEventListener("keydown", (e) => {
-// 		if (e.key === "Enter") {
-// 			const { activeElement } = document
-// 			if (activeElement.tagName.toLowerCase() === "a") return
-// 			activeElement.click()
-// 		}
-// 	})
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Enter") {
+			const { activeElement } = document
+			if (activeElement.tagName.toLowerCase() === "a") return
+			activeElement.click()
+		}
+	})
 
-// 	setupPools()
-// })
+	setupPools()
+})
 
-// /** Network Watcher */
-// watch(
-// 	() => currentNetwork.value,
-// 	() => {
-// 		setupPools()
-// 	},
-// )
+/** Network Watcher */
+watch(
+	() => currentNetwork.value,
+	() => {
+		setupPools()
+	},
+)
 
-// const setupPools = async () => {
-// 	marketStore.pools = await fetchAllPools()
-// 	initPools(marketStore.pools)
+const setupPools = async () => {
+	marketStore.pools = await fetchAllPools()
+	initPools(marketStore.pools)
 
-// 	marketStore.lines = await fetchPoolsLines()
-// }
+	marketStore.lines = await fetchPoolsLines()
+}
 
 /**
  * Setup Market (Markets & Quotes & Subscriptinos)
