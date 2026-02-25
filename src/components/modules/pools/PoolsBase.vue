@@ -144,11 +144,11 @@ const populatePools = async () => {
 		if (!Object.hasOwnProperty.call(pools.value, index)) return
 		const pool = pools.value[index]
 
-		poolsStates.value[pool.address] = await juster.pools[pool.address].getLastPoolState()
+		// poolsStates.value[pool.address] = await juster.pools[pool.address].getLastPoolState()
 
-		poolsAPY.value[pool.address] = (await juster.pools[pool.address].getAPY()).toNumber()
+		// poolsAPY.value[pool.address] = (await juster.pools[pool.address].getAPY()).toNumber()
 	}
-
+P
 	isPopulated.value = true
 
 	setupSubToStates()

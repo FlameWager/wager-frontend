@@ -127,36 +127,36 @@ const handleSelectPool = (pool) => {
 	emit("onSelectPool", pool)
 }
 
-onMounted(() => {
-	poolsSearcher.value = new Searcher(props.pools, {
-		keySelector: (item) => {
-			let { name } = item
+// onMounted(() => {
+// 	poolsSearcher.value = new Searcher(props.pools, {
+// 		keySelector: (item) => {
+// 			let { name } = item
 
-			if (name.includes("XTZ")) {
-				name += " Tezos"
-			}
-			if (name.includes("BTC")) {
-				name += " Bitcoin"
-			}
-			if (name.includes("ETH")) {
-				name += " Ethereun"
-			}
+// 			if (name.includes("XTZ")) {
+// 				name += " Tezos"
+// 			}
+// 			if (name.includes("BTC")) {
+// 				name += " Bitcoin"
+// 			}
+// 			if (name.includes("ETH")) {
+// 				name += " Ethereun"
+// 			}
 
-			if (name.includes("1H")) {
-				name += " 1 hour"
-			}
-			if (name.includes("6H")) {
-				name += " 6 hours"
-			}
-			if (name.includes("1D")) {
-				name += " 1 day"
-			}
+// 			if (name.includes("1H")) {
+// 				name += " 1 hour"
+// 			}
+// 			if (name.includes("6H")) {
+// 				name += " 6 hours"
+// 			}
+// 			if (name.includes("1D")) {
+// 				name += " 1 day"
+// 			}
 
-			return name.replace("Juster Pool: ", "").replaceAll("-", " ")
-		},
-		threshold: 0.62,
-	})
-})
+// 			return name.replace("Wager Pool: ", "").replaceAll("-", " ")
+// 		},
+// 		threshold: 0.62,
+// 	})
+// })
 
 const handlePoolsKeyboardNavigation = (e) => {
 	if (e.key === "Enter") {

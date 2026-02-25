@@ -76,21 +76,21 @@ onMounted(() => {
 		updateTimeDiff()
 	}, 30_000)
 
-	juster.pools[props.pool.address].subscribeToRiskIndex((data) => {
-		if (data.isNaN()) return
-		riskIndex.value = data.toNumber() * 100
-	})
-	juster.pools[props.pool.address].subscribeToUtilization((data) => {
-		if (data.isNaN()) return
-		utilization.value = data.toNumber() * 100
-	})
+	// juster.pools[props.pool.address].subscribeToRiskIndex((data) => {
+	// 	if (data.isNaN()) return
+	// 	riskIndex.value = data.toNumber() * 100
+	// })
+	// juster.pools[props.pool.address].subscribeToUtilization((data) => {
+	// 	if (data.isNaN()) return
+	// 	utilization.value = data.toNumber() * 100
+	// })
 })
 
 onBeforeUnmount(() => {
 	clearInterval(poolUpdInterval)
 
-	juster.pools[props.pool.address].unsubscribeFromRiskIndex()
-	juster.pools[props.pool.address].unsubscribeFromUtilization()
+	// juster.pools[props.pool.address].unsubscribeFromRiskIndex()
+	// juster.pools[props.pool.address].unsubscribeFromUtilization()
 })
 
 const handleDeposit = () => {
@@ -194,7 +194,7 @@ const copy = (target) => {
 
 				<Flex direction="column" gap="8">
 					<Text size="14" color="primary" weight="600">
-						{{ parsePoolName(pool?.name.replace("Juster Pool: ", "")) }}
+						<!-- {{ parsePoolName(pool?.name.replace("Juster Pool: ", "")) }} -->
 					</Text>
 
 					<Flex align="center" gap="4">
