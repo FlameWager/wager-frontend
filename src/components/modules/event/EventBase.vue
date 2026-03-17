@@ -486,7 +486,7 @@ onUnmounted(() => {
 <template>
 	<div :class="$style.wrapper">
 		<metainfo>
-			<template #title="{ content }"> {{ content }} • Juster </template>
+			<template #title="{ content }"> {{ content }} • Wager </template>
 		</metainfo>
 
 		<StakeModal :show="showBetModal" :event="event" @onBet="handleBet" @onContinue="handleContinue" @onClose="handleBetModalClose" />

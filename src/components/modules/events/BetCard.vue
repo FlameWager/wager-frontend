@@ -32,7 +32,7 @@ const props = defineProps({
 const isWon = computed(() => props.bet.betType == props.event?.winnerBets)
 
 const showOperationModal = ref(false)
-console.log(props.bet)
+
 const side = computed(() => (props.bet.betType == "ABOVE_EQ" ? "Up" : "Down"))
 
 const amount = computed(() => Number(props.bet.amount || 0))

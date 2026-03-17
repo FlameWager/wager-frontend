@@ -40,6 +40,24 @@ export const EVENTS_BY_STATUS_QUERY = `
       winnerBets
       measureOracleStartTime
       closedOracleTime
+      bets {
+        id
+        user {
+          address
+        }
+        betType
+        amount
+        timestamp
+      }
+      deposits {
+        id
+        userId
+        eventId
+        amountAboveEq
+        amountBelow
+        shares
+        timestamp
+      }
     }
   }
 `
