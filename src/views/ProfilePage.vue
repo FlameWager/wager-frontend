@@ -7,11 +7,11 @@ import Page from "@base/Page.vue"
 /**
  * Module
  */
-import WithdrawalsBase from "@modules/profile/WithdrawalsBase.vue"
+import ProfileBase from "@modules/profile/ProfileBase.vue"
 </script>
 
 <template>
 	<Page>
-		<WithdrawalsBase />
+		<ProfileBase />
 	</Page>
 </template>

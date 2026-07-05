@@ -47,6 +47,8 @@ export const EVENTS_BY_STATUS_QUERY = `
         }
         betType
         amount
+        minimalWinAmount
+        payout
         timestamp
       }
       deposits {
@@ -100,6 +102,8 @@ export const EVENT_BY_ID_QUERY = `
         }
         betType
         amount
+        minimalWinAmount
+        payout
         timestamp
       }
       deposits {
@@ -324,6 +328,8 @@ export const EVENT_SUBSCRIPTION = `
         }
         betType
         amount
+        minimalWinAmount
+        payout
         timestamp
       }
       deposits {

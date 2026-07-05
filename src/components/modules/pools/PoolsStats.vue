@@ -33,7 +33,10 @@ const stats = computed(() => {
 	let avgSharePrice = 0
 
 	Object.keys(props.poolsStates).forEach((address) => {
-		const { totalLiquidity, sharePrice } = props.poolsStates[address]
+		const state = props.poolsStates[address]
+		if (!state) return
+
+		const { totalLiquidity, sharePrice } = state
 
 		valueOfPools += BN.isBigNumber(totalLiquidity)
 			? totalLiquidity.toNumber()
@@ -113,7 +116,7 @@ const apy = computed(() => {
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
 					{{
-						poolsStates[pools[0].address].totalShares
+						(poolsStates[pools[0].address] && poolsStates[pools[0].address].totalShares)
 							? numberWithSymbol(poolsStates[pools[0].address].totalShares, ",")
 							: 0
 					}}
@@ -164,7 +167,7 @@ const apy = computed(() => {
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
 					{{
-						poolsStates[pools[0].address].sharePrice
+						(poolsStates[pools[0].address] && poolsStates[pools[0].address].sharePrice)
 							? poolsStates[pools[0].address].sharePrice.toFixed(2)
 							: 0
 					}}
@@ -191,7 +194,7 @@ const apy = computed(() => {
 		>
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
-					{{ poolMetrics.utilization.toFixed(2) }}%
+					{{ poolMetrics && poolMetrics.utilization ? poolMetrics.utilization.toFixed(2) : 0 }}%
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
 			</Flex>
@@ -215,7 +218,7 @@ const apy = computed(() => {
 		>
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
-					{{ pools[0].activeLiquidity ? numberWithSymbol(pools[0].activeLiquidity, ",") : 0 }} ETH
+					{{ (poolsStates[pools[0].address] && poolsStates[pools[0].address].activeLiquidity) ? numberWithSymbol(poolsStates[pools[0].address].activeLiquidity, ",") : 0 }} XTZ
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
 			</Flex>
@@ -239,7 +242,7 @@ const apy = computed(() => {
 		>
 			<Flex align="center" gap="6" :class="$style.stat__values">
 				<Text v-if="isReady" size="16" weight="600" color="primary">
-					{{ pools[0].withdrawableLiquidity ? numberWithSymbol(pools[0].withdrawableLiquidity, ",") : 0 }} ETH
+					{{ (poolsStates[pools[0].address] && poolsStates[pools[0].address].withdrawableLiquidity) ? numberWithSymbol(poolsStates[pools[0].address].withdrawableLiquidity, ",") : 0 }} XTZ
 				</Text>
 				<LoadingDots v-else :class="$style.dots_anim" />
 			</Flex>

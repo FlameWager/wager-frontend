@@ -24,8 +24,8 @@ import { activeChainConfig } from "@config"
 const accountStore = useAccountStore()
 
 const reward = computed(() => {
-	const total = accountStore.rewards.reduce(
-		(acc, curr) => (acc += curr.value),
+	const total = (accountStore.wonPositions || []).reduce(
+		(acc, curr) => (acc += Number(curr.value) || 0),
 		0,
 	)
 	return total
@@ -42,7 +42,7 @@ const reward = computed(() => {
 					<Text size="12" weight="700" color="primary">
 						{{ numberWithSymbol(reward, ",") }}&nbsp;
 					</Text>
-					<Text size="12" weight="700" color="tertiary"> {{activeChainConfig.nativeCurrency.symbol}} </Text>
+					<Text size="12" weight="700" color="tertiary"> {{"XTZ"}} </Text>
 				</Flex>
 			</Flex>
 

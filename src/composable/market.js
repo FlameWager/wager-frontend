@@ -1,5 +1,6 @@
 import { reactive } from "vue"
 import { DateTime } from "luxon"
+import { pipe, subscribe } from "wonka"
 
 /**
  * Services
@@ -14,17 +15,14 @@ import { fetchMarkets } from "@/api/markets"
 import { fetchQuotesByMarket, fetchQuoteByTimestamp } from "@/api/quotes"
 import { fetchUserPositionsForWithdraw } from "@/api/positions"
 import { fetchUserWithdrawals } from "@/api/users"
+import { WON_BETS_SUBSCRIPTION } from "@/graphql/positions"
+import { QUOTES_SUBSCRIPTION } from "@/graphql/quotes"
 
 /**
  * Store
  */
 import { useMarketStore } from "@store/market"
 import { useAccountStore } from "@store/account"
-
-/**
- * gql
- */
-import { position } from "@/graphql/models"
 
 export const useMarket = () => {
 	const marketStore = useMarketStore()
@@ -33,100 +31,48 @@ export const useMarket = () => {
 	const markets = reactive([])
 
 	const setupUser = async () => {
+		const lowerAddress = accountStore.pkh.toLowerCase()
+
 		/** All positions for withdraw */
 		const userPositions = await fetchUserPositionsForWithdraw({
-			address: accountStore.pkh,
+			address: lowerAddress,
 		})
-		if (userPositions.length) {
-			accountStore.positionsForWithdrawal = userPositions
-			accountStore.isPositionsLoading = false
-		}
+		accountStore.positionsForWithdrawal = userPositions
+		accountStore.isPositionsLoading = false
 
 		/** Withdrawals */
 		accountStore.withdrawals = await fetchUserWithdrawals({
-			address: accountStore.pkh,
+			address: lowerAddress,
 		})
 
 		/**
 		 * Subscriptions
 		 */
 
-		/** New Positions */
-		flameWager.gql
-			.subscription({
-				position: [
-					{
-						where: {
-							userId: {
-								_eq: accountStore.pkh,
-							},
-							withdrawn: { _eq: false },
-							value: { _neq: 0 },
-							event: { status: { _eq: "FINISHED" } },
-						},
-					},
-					{
-						...position,
-					},
-				],
-			})
-			.subscribe({
-				next: (data) => {
-					const newPositions = data.position
-
-					newPositions.forEach((newPosition) => {
-						if (
-							accountStore.positionsForWithdrawal.some(
-								(position) => position.id == newPosition.id,
-							)
-						)
-							return
-
-						accountStore.positionsForWithdrawal.push(newPosition)
-					})
-				},
-				error: console.error,
-			})
-
-		/** Newly withdrawn positions */
-		flameWager.gql
-			.subscription({
-				position: [
-					{
-						where: {
-							userId: { _eq: accountStore.pkh },
-							withdrawn: { _eq: true },
-							event: { status: { _eq: "FINISHED" } },
-						},
-					},
-					{
-						...position,
-					},
-				],
-			})
-			.subscribe({
-				next: (data) => {
-					const { position: withdrawnPositions } = data
-
-					const positionsIdsForWithdrawal =
-						accountStore.positionsForWithdrawal.map((pos) => pos.id)
-					withdrawnPositions.forEach((withdrawnPosition) => {
-						if (
-							positionsIdsForWithdrawal.includes(
-								withdrawnPosition.id,
-							)
-						) {
-							accountStore.removePosition(withdrawnPosition.id)
-						}
-					})
-				},
-				error: console.error,
-			})
+		/** New Won Bets */
+		if (flameWager.gql) {
+			pipe(
+				flameWager.gql.subscription(WON_BETS_SUBSCRIPTION, { address: lowerAddress }),
+				subscribe((result) => {
+					if (result.error) {
+						console.error("Won bets subscription error:", result.error)
+						return
+					}
+					const wonBets = result.data?.bet || []
+					// Replace the whole array to keep it in sync and map payout to value
+					accountStore.positionsForWithdrawal = wonBets.map(b => ({
+						...b,
+						type: "bet",
+						value: b.payout || b.amount
+					}))
+				})
+			)
+		}
 	}
 
 	const updateWithdrawals = async () => {
 		accountStore.withdrawals = await fetchUserWithdrawals({
-			address: accountStore.pkh,
+			address: accountStore.pkh.toLowerCase(),
 		})
 	}
 
@@ -171,33 +117,24 @@ export const useMarket = () => {
 			 */
 
 			/** Quotes */
-			flameWager.gql
-				.subscription({
-					quotesWma: [
-						{
-							where: {
-								currencyPairId: { _eq: market.id },
-							},
-							order_by: { timestamp: "desc" },
-							limit: 1,
-						},
-						{
-							currencyPairId: true,
-							price: true,
-							timestamp: true,
-						},
-					],
-				})
-				.subscribe({
-					next: (data) => {
-						const quote = data.quotesWma[0]
-						marketStore.updateQuotes({
-							target: market.symbol,
-							quote,
-						})
-					},
-					error: console.error,
-				})
+			if (flameWager.gql) {
+				pipe(
+					flameWager.gql.subscription(QUOTES_SUBSCRIPTION, { currencyPairId: market.id }),
+					subscribe((result) => {
+						if (result.error) {
+							console.error(`Quote subscription error for ${market.symbol}:`, result.error)
+							return
+						}
+						const quote = result.data?.quotesWma?.[0]
+						if (quote) {
+							marketStore.updateQuotes({
+								target: market.symbol,
+								quote,
+							})
+						}
+					})
+				)
+			}
 		})
 	}
 

@@ -19,9 +19,10 @@ import LoadingDots from "@ui/LoadingDots.vue"
 /**
  * Services
  */
-import { flameWager as juster, analytics } from "@sdk"
+import { flameWager as juster, analytics, approveXTZ } from "@sdk"
 import { sanitizeInput, capitalizeFirstLetter, parsePoolName } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
+import { ethers } from "ethers"
 
 /**
  * Store
@@ -63,7 +64,10 @@ const balanceToAmountRatio = computed(() => {
 	}
 })
 
-const depositInShares = computed(() => amount.value / props.state.sharePrice)
+const depositInShares = computed(() => {
+	if (!props.state || !props.state.sharePrice) return 0
+	return amount.value / props.state.sharePrice
+})
 
 const opConfirmationInProgress = ref(false)
 const handleDeposit = async () => {
@@ -72,10 +76,16 @@ const handleDeposit = async () => {
 	opConfirmationInProgress.value = true
 
 	try {
-		const op = await juster.pools[props.selectedPool.address].depositLiquidity(BN(amount.value))
+        const amountWei = ethers.parseEther(amount.value.toString())
+
+        // Step 1: Approve XTZ
+        await approveXTZ(props.selectedPool.address, amountWei)
+
+        // Step 2: Deposit into Pool
+		const tx = await juster.pools[props.selectedPool.address].deposit(amountWei)
 
 		accountStore.pendingTransaction.awaiting = true
-		op.confirmation()
+		tx.wait()
 			.then(() => {
 				accountStore.pendingTransaction.awaiting = false
 			})
@@ -107,7 +117,7 @@ const handleDeposit = async () => {
 				notification: {
 					icon: "warning",
 					title: "The operation was rejected",
-					description: `The deposit to ${props.selectedPool.name} of ${amount.value} TIA was not accepted`,
+					description: `The deposit to ${props.selectedPool?.name || "pool"} of ${amount.value} XTZ was not accepted`,
 					autoDestroy: true,
 				},
 			})
@@ -144,15 +154,16 @@ const buttonState = computed(() => {
 			disabled: true,
 			type: "secondary",
 		}
-	if (amount.value > 0 && amount.value < 0.01) return { text: "Minimum 0.01 TIA", disabled: true, type: "secondary" }
+	if (amount.value > 0 && amount.value < 0.01) return { text: "Minimum 0.01 XTZ", disabled: true, type: "secondary" }
 	if (amount.value > accountStore.balance)
 		return {
 			text: "Insufficient funds",
 			disabled: true,
 			type: "secondary",
 		}
+	const poolName = props.selectedPool?.name || "";
 	return {
-		text: `Deposit to ${parsePoolName(props.selectedPool.name.replace("Juster Pool: ", ""))}`,
+		text: `Deposit to ${parsePoolName(poolName.replace("Juster Pool: ", ""))}`,
 		disabled: false,
 		type: "primary",
 	}
@@ -239,7 +250,7 @@ const onKeydown = (e) => {
 				<Icon name="arrow" size="12" color="tertiary" :class="$style.arrow_icon" />
 
 				<Text size="14" weight="600" color="primary">
-					{{ parsePoolName(selectedPool.name.replace("Juster Pool: ", "")) }}
+					{{ selectedPool?.name ? parsePoolName(selectedPool.name.replace("Juster Pool: ", "")) : "Unnamed Pool" }}
 				</Text>
 			</Flex>
 
@@ -252,7 +263,7 @@ const onKeydown = (e) => {
 					<Flex align="center" gap="20">
 						<Flex direction="column" gap="8">
 							<Text size="14" weight="600" color="primary">
-								{{ selectedPool.name.replace("Juster Pool: ", "") }}
+								{{ selectedPool?.name ? selectedPool.name.replace("Juster Pool: ", "") : "Unnamed Pool" }}
 							</Text>
 
 							<Flex align="center" gap="8">
@@ -287,10 +298,8 @@ const onKeydown = (e) => {
 									<Text size="14" weight="600" color="secondary">
 										{{
 											numberWithSymbol(
-												state.totalLiquidity.toNumber
-													? state.totalLiquidity.toNumber() + amount.value
-													: state.totalLiquidity + amount.value,
-												",",
+												BN(state.totalLiquidity).plus(amount.value || 0).toNumber(),
+												","
 											)
 										}}
 									</Text>
@@ -328,7 +337,7 @@ const onKeydown = (e) => {
 				:limit="1000000"
 				label="Amount"
 				placeholder="Deposit amount"
-				subtext="ꜩ"
+				subtext="XTZ"
 				v-model="amount.value"
 				@keydown="handleKeydown"
 				:class="$style.amount_input"
@@ -391,7 +400,7 @@ const onKeydown = (e) => {
 						<Flex align="center">
 							<Text size="14" weight="600" color="primary">
 								{{ amount.value ? numberWithSymbol(amount.value, ",") : 0 }} </Text
-							>&nbsp; <Text size="14" weight="600" color="tertiary"> {{activeChainConfig.nativeCurrency.symbol}} </Text>&nbsp;
+							>&nbsp; <Text size="14" weight="600" color="tertiary"> XTZ </Text>&nbsp;
 							<Text size="14" weight="600" color="support"> -> </Text>&nbsp;
 							<Text size="14" weight="600" color="secondary"> ~ </Text>
 							<Text size="14" weight="600" color="primary">
@@ -401,10 +410,10 @@ const onKeydown = (e) => {
 						</Flex>
 					</Flex>
 
-					<Flex align="center" gap="8">
+					<Flex v-if="state" align="center" gap="8">
 						<Icon name="banknote" size="14" color="tertiary" />
 						<Text size="14" weight="600" color="primary">
-							{{ state.sharePrice.toFixed(2) }}
+							{{ state.sharePrice.toFixed ? state.sharePrice.toFixed(2) : state.sharePrice }}
 						</Text>
 					</Flex>
 				</Flex>

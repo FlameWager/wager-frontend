@@ -49,18 +49,18 @@ import { useMarketStore } from "@store/market"
 
 const defaultFilters = {
 	symbols: [
-		{
-			name: "XTZ-USD",
-			active: true,
-		},
+		// {
+		// 	name: "MEZO-USD",
+		// 	active: true,
+		// },
 		{
 			name: "BTC-USD",
 			active: true,
 		},
-		{
-			name: "ETH-USD",
-			active: true,
-		},
+		// {
+		// 	name: "ETH-USD",
+		// 	active: true,
+		// },
 	],
 
 	periods: [
@@ -250,8 +250,8 @@ const filteredEvents = computed(() => {
 			.filter((status) => status.active)
 			.map((status) => {
 				if (status.name == "New") return "NEW"
-				if (status.name == "Running") return "STARTED"
-				if (status.name == "Finished") return "FINISHED"
+				if (status.name == "Running") return "MEASUREMENT_STARTED"
+				if (status.name == "Finished") return "CLOSED"
 				if (status.name == "Canceled") return "CANCELED"
 			})
 
@@ -364,7 +364,7 @@ onMounted(async () => {
 	isNewEventsLoaded.value = true
 	marketStore.events = cloneDeep(newEvents)
 
-	let runningEvents = await fetchEventsByStatus({ status: "STARTED" })
+	let runningEvents = await fetchEventsByStatus({ status: "MEASUREMENT_STARTED" })
 	marketStore.events = [...marketStore.events, ...cloneDeep(runningEvents)]
 
 	let finishedEvents = await fetchEventsByStatus({ status: "FINISHED" })

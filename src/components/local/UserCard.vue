@@ -130,7 +130,7 @@ const handleCopy = (target) => {
 							>{{
 								user.liquidityProvidedBelow.toFixed(2)
 							}}
-							ꜩ</span
+							XTZ</span
 						>
 					</div>
 				</div>
@@ -155,13 +155,11 @@ const handleCopy = (target) => {
 				<DropdownDivider />
 
 				<a
-					:href="`https://${
-						currentNetwork === 'mainnet' ? '' : 'ghostnet.'
-					}tzkt.io/${user.userId}`"
+					:href="`https://explorer.test.mezo.org/address/${user.userId}`"
 					target="_blank"
 				>
 					<DropdownItem>
-						<Icon name="database" size="16" />View on TzKT
+						<Icon name="database" size="16" />View on Explorer
 					</DropdownItem>
 				</a>
 

@@ -104,20 +104,15 @@ const handleLogout = () => {
 					>
 						<Icon name="money" size="20" :class="$style.icon" />
 
-						<Flex direction="column" gap="6">
+						<Flex direction="column" gap="4">
 							<Text size="13" weight="600" color="primary">
-								<Flex>
-									{{
-										numberWithSymbol(
-											accountStore.balance,
-											",",
-										)
-									}}&nbsp;
-									<Text color="tertiary">{{activeChainConfig.nativeCurrency.symbol}}</Text>
+								<Flex gap="4">
+									{{ numberWithSymbol(accountStore.balance, ",") }}
+									<Text color="tertiary">XTZ</Text>
 								</Flex>
 							</Text>
 							<Text size="11" weight="600" color="tertiary">
-								Manage your assets
+								{{ accountStore.btcBalance }} BTC
 							</Text>
 						</Flex>
 					</Flex>

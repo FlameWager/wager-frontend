@@ -52,7 +52,10 @@ const valueLocked = computed(() => {
 	if (!props.isReady) return 0
 	return props.positions
 		.reduce((acc, curr) => {
-			return acc.plus(curr.shares.multipliedBy(props.poolsStates[curr.poolId].sharePrice))
+			const poolId = curr.poolId.toLowerCase()
+			const poolState = props.poolsStates[poolId] || Object.values(props.poolsStates).find(p => p.poolId?.toLowerCase() === poolId)
+			const sharePrice = poolState ? poolState.sharePrice : 1
+			return acc.plus(curr.shares.multipliedBy(sharePrice))
 		}, BN(0))
 		.toNumber()
 })
@@ -88,9 +91,12 @@ const maxValue = computed(() => {
 
 const sortedPositions = computed(() => {
 	const sPositions = props.positions.map((position) => {
+		const poolId = position.poolId.toLowerCase()
+		const poolState = props.poolsStates[poolId] || Object.values(props.poolsStates).find(p => p.poolId?.toLowerCase() === poolId)
+		const sharePrice = poolState ? poolState.sharePrice : 1
 		return {
 			...position,
-			tvl: position.shares.multipliedBy(props.poolsStates[position.poolId].sharePrice),
+			tvl: position.shares.multipliedBy(sharePrice),
 		}
 	})
 
@@ -119,6 +125,11 @@ const parseProfitAmount = (amount) => {
 		return numberWithSymbol(amount, ",")
 	}
 }
+
+const getPoolName = (poolId, poolObj) => {
+	const poolName = poolObj?.name || pools.value.find((p) => p.address?.toLowerCase() === poolId?.toLowerCase())?.name || "";
+	return parsePoolName(poolName.replace("Juster Pool: ", "").replace("Wager Pool: ", ""));
+}
 </script>
 
 <template>
@@ -134,7 +145,7 @@ const parseProfitAmount = (amount) => {
 
 		<Toggleable :expanded="expanded">
 			<Flex v-if="selectedTab === 'TVL'" direction="column" gap="24" :class="$style.mgs">
-				<Flex v-if="!valueLocked & isReady" direction="column" gap="24" align="center" :class="$style.empty_warn">
+				<Flex v-if="!valueLocked && isReady" direction="column" gap="24" align="center" :class="$style.empty_warn">
 					<Icon name="bar_chart" size="24" color="support" />
 
 					<Flex direction="column" align="center" gap="8">
@@ -150,7 +161,7 @@ const parseProfitAmount = (amount) => {
 						<Flex v-for="position in sortedPositions" direction="column" gap="8">
 							<Flex align="center" justify="between">
 								<Text color="secondary" size="13" weight="600">
-									{{ parsePoolName(position.pool.name.replace("Juster Pool: ", "")) }}
+									{{ getPoolName(position.poolId, position.pool) }}
 								</Text>
 
 								<Flex align="center" gap="8">
@@ -283,7 +294,7 @@ const parseProfitAmount = (amount) => {
 								<Flex align="center" justify="between">
 									<Text color="secondary" size="13" weight="600">
 										{{
-											parsePoolName(pools.find((p) => p.address == summary.poolId).name.replace("Juster Pool: ", ""))
+											getPoolName(summary.poolId, null)
 										}}
 									</Text>
 

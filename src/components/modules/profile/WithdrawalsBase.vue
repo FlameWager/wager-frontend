@@ -63,7 +63,7 @@ const paginatedWithdrawalsHistory = computed(() =>
 const currentPageForPositions = ref(1)
 
 const positionsForWithdraw = computed(() =>
-	accountStore.positionsForWithdrawal.filter((position) => position.value),
+	accountStore.positionsForWithdrawal.filter((position) => position.payout),
 )
 const paginatedPositionsForWithdraw = computed(() =>
 	positionsForWithdraw.value.slice(
@@ -149,19 +149,21 @@ onMounted(async () => {
 	 * @Month
 	 * @AllTime
 	 */
-	const withdrawalsLastWeek = withdrawalsHistory.value.filter(
+	const withdrawalsLastWeek = (withdrawalsHistory.value || []).filter(
 		(withdraw) =>
+			withdraw?.event?.closedOracleTime && 
 			DateTime.fromISO(withdraw.event.closedOracleTime).ts >
 			DateTime.now().minus({ days: 7 }).ts,
 	)
-	const withdrawalsLastMonth = withdrawalsHistory.value.filter(
+	const withdrawalsLastMonth = (withdrawalsHistory.value || []).filter(
 		(withdraw) =>
+			withdraw?.event?.closedOracleTime &&
 			DateTime.fromISO(withdraw.event.closedOracleTime).ts >
 			DateTime.now().minus({ days: 30 }).ts,
 	)
 
 	statistics.week.value = withdrawalsLastWeek.reduce(
-		(acc, curr) => acc + curr.amount,
+		(acc, curr) => acc + (curr.amount || 0),
 		0,
 	)
 	statistics.week.avg = withdrawalsLastWeek.length
@@ -169,19 +171,19 @@ onMounted(async () => {
 		: 0
 
 	statistics.month.value = withdrawalsLastMonth.reduce(
-		(acc, curr) => acc + curr.amount,
+		(acc, curr) => acc + (curr.amount || 0),
 		0,
 	)
 	statistics.month.avg = withdrawalsLastMonth.length
 		? statistics.month.value / withdrawalsLastMonth.length
 		: 0
 
-	statistics.all.value = withdrawalsHistory.value.reduce(
-		(acc, curr) => acc + curr.amount,
+	statistics.all.value = (withdrawalsHistory.value || []).reduce(
+		(acc, curr) => acc + (curr.amount || 0),
 		0,
 	)
-	statistics.all.avg = withdrawalsHistory.value.length
-		? statistics.all.value / withdrawalsHistory.value.length
+	statistics.all.avg = (withdrawalsHistory.value || []).length
+		? statistics.all.value / (withdrawalsHistory.value || []).length
 		: 0
 })
 
@@ -213,7 +215,7 @@ useMeta({
 		/>
 
 		<metainfo>
-			<template #title="{ content }">{{ content }} • Juster</template>
+			<template #title="{ content }">{{ content }} • MammothBet</template>
 		</metainfo>
 
 		<div :class="$style.block">
@@ -226,33 +228,33 @@ useMeta({
 				<div :class="$style.stat">
 					<div :class="$style.stat_name">Last week</div>
 					<div :class="$style.stat_value">
-						{{ statistics.week.value.toFixed(0) }} ꜩ
+						{{ statistics.week.value.toFixed(0) }} XTZ
 					</div>
 					<div :class="$style.stat_avg">
 						Avg
-						<span>{{ statistics.week.avg.toFixed(0) }} ꜩ</span>
+						<span>{{ statistics.week.avg.toFixed(0) }} XTZ</span>
 						per event
 					</div>
 				</div>
 				<div :class="$style.stat">
 					<div :class="$style.stat_name">Last month</div>
 					<div :class="$style.stat_value">
-						{{ statistics.month.value.toFixed(0) }} ꜩ
+						{{ statistics.month.value.toFixed(0) }} XTZ
 					</div>
 					<div :class="$style.stat_avg">
 						Avg
-						<span>{{ statistics.month.avg.toFixed(0) }} ꜩ</span>
+						<span>{{ statistics.month.avg.toFixed(0) }} XTZ</span>
 						per event
 					</div>
 				</div>
 				<div :class="$style.stat">
 					<div :class="$style.stat_name">All time</div>
 					<div :class="$style.stat_value">
-						{{ statistics.all.value.toFixed(0) }} ꜩ
+						{{ statistics.all.value.toFixed(0) }} XTZ
 					</div>
 					<div :class="$style.stat_avg">
 						Avg
-						<span>{{ statistics.all.avg.toFixed(0) }} ꜩ</span> per
+						<span>{{ statistics.all.avg.toFixed(0) }} XTZ</span> per
 						event
 					</div>
 				</div>
@@ -392,11 +394,11 @@ useMeta({
 						<td>
 							+{{
 								numberWithSymbol(
-									withdraw.amount.toFixed(2),
+									Number(withdraw.amount).toFixed(2),
 									",",
 								)
 							}}
-							<span>ꜩ</span>
+							<span>XTZ</span>
 						</td>
 						<td>
 							<router-link :to="`/events/${withdraw.event.id}`">
@@ -440,7 +442,7 @@ useMeta({
 
 			<div :class="$style.hint">
 				<Icon name="help" size="14" />You can withdraw your funds
-				manually, however if not done within 24 hours, Juster will do
+				manually, however if not done within 24 hours, MammothBet will do
 				that for you and charge a small fee.
 			</div>
 		</div>

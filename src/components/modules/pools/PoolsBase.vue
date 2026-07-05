@@ -3,8 +3,9 @@
  * Vendor
  */
 import { ref, onMounted, onUnmounted, computed, watch } from "vue"
-// import { makeSummaryPosition } from "@juster-finance/sdk"
+import { makeSummaryPosition } from "@/services/sdk/estimators"
 import { useMeta } from "vue-meta"
+import { useRoute } from "vue-router"
 import BN from "bignumber.js"
 
 /**
@@ -36,6 +37,7 @@ import TimelineModal from "@local/modals/pools/TimelineModal.vue"
  */
 import { flags, updateFlag } from "@/services/flags"
 import { flameWager as juster } from "@sdk"
+import { executeQuery } from "@/api/graphql"
 
 /**
  * Models
@@ -52,6 +54,9 @@ import { useMarketStore } from "@store/market"
 const accountStore = useAccountStore()
 const notificationsStore = useNotificationsStore()
 const marketStore = useMarketStore()
+
+const route = useRoute()
+const activeAddress = computed(() => (route.query.address || accountStore.pkh)?.toLowerCase())
 
 const showSharePoolModal = ref(false)
 const showPoolsModal = ref(false)
@@ -120,7 +125,17 @@ const isPopulated = ref(false)
 const poolsStates = ref({})
 const poolsAPY = ref({})
 
-const summaries = ref({})
+const summaries = computed(() => {
+	const res = {}
+	positions.value.forEach((pos) => {
+		const poolId = pos.poolId.toLowerCase()
+		const state = poolsStates.value[poolId]
+		if (state) {
+			res[poolId] = makeSummaryPosition(pos, state)
+		}
+	})
+	return res
+})
 
 /**
  * Pool Position
@@ -140,13 +155,19 @@ const entries = ref([])
 const subStates = ref({})
 
 const populatePools = async () => {
-	for (const index in pools.value) {
-		if (!Object.hasOwnProperty.call(pools.value, index)) return
-		const pool = pools.value[index]
+	for (const pool of pools.value) {
+		const poolInstrument = juster.pools[pool.address]
+		if (!poolInstrument) continue
 
-		poolsStates.value[pool.address] = await juster.pools[pool.address].getLastPoolState()
+		const state = await poolInstrument.getLastPoolState()
+		if (state) {
+			poolsStates.value[pool.address.toLowerCase()] = state
+		}
 
-		poolsAPY.value[pool.address] = (await juster.pools[pool.address].getAPY()).toNumber()
+		const apy = await poolInstrument.getAPY()
+		if (apy) {
+			poolsAPY.value[pool.address.toLowerCase()] = apy.toNumber()
+		}
 	}
 
 	isPopulated.value = true
@@ -155,91 +176,211 @@ const populatePools = async () => {
 }
 
 const setupSubToStates = async () => {
-	subStates.value = await juster.gql
-		.subscription({
-			poolState: [
-				{
-					where: {
-						pool: {
-							address: {
-								_in: pools.value.map((pool) => pool.address),
-							},
-						},
-					},
-					limit: 1,
-					order_by: [{ timestamp: "desc" }],
-				},
-				poolStateModel,
-			],
+    pools.value.forEach(pool => {
+        const poolInstrument = juster.pools[pool.address]
+        if (!poolInstrument) return
+
+        poolInstrument.subscribeToLastPoolState((newPoolState) => {
+            const poolId = newPoolState.poolId.toLowerCase()
+            const currentPoolState = poolsStates.value[poolId]
+
+            if (newPoolState.counter === currentPoolState?.counter) return
+
+            if (newPoolState.counter > (currentPoolState?.counter || 0)) {
+                poolsStates.value[poolId] = newPoolState
+            }
+        })
+    })
+}
+
+const setupSubToEntries = async () => {
+	if (!juster.gql || !activeAddress.value) return
+
+	const poolAddresses = pools.value.map((pool) => pool.address.toLowerCase())
+	const userAddress = activeAddress.value
+
+	// Initial HTTP Query fetch for entries (extremely robust fallback)
+	const queryStr = `
+		query GetEntries($poolAddresses: [String!], $userAddress: String!) {
+			entryLiquidity(where: { poolId: { _in: $poolAddresses }, userId: { _eq: $userAddress } }) {
+				entryId
+				acceptTime
+				amount
+				poolId
+				status
+				pool {
+					entryLockPeriod
+					address
+				}
+			}
+		}
+	`
+	try {
+		const res = await juster.gql.query(queryStr, { poolAddresses, userAddress }).toPromise()
+		if (res.error) {
+			throw res.error
+		}
+		if (res.data?.entryLiquidity) {
+			entries.value = res.data.entryLiquidity
+		}
+	} catch (e) {
+		console.warn("urql query failed for entries, falling back to native executeQuery:", e)
+		try {
+			const data = await executeQuery(queryStr, { poolAddresses, userAddress })
+			if (data?.entryLiquidity) {
+				entries.value = data.entryLiquidity
+			}
+		} catch (fallbackError) {
+			console.error("Fallback executeQuery for entries failed:", fallbackError)
+		}
+	}
+
+	const subQuery = `
+		subscription WatchEntries($poolAddresses: [String!], $userAddress: String!) {
+			entryLiquidity(where: { poolId: { _in: $poolAddresses }, userId: { _eq: $userAddress } }) {
+				entryId
+				acceptTime
+				amount
+				poolId
+				status
+				pool {
+					entryLockPeriod
+					address
+				}
+			}
+		}
+	`
+
+	subEntries.value = juster.gql
+		.subscription(subQuery, {
+			poolAddresses,
+			userAddress,
 		})
 		.subscribe({
-			next: ({ poolState }) => {
-				const newPoolState = poolState[0]
-				const currentPoolState = poolsStates.value[newPoolState.poolId]
-
-				if (newPoolState.counter === currentPoolState.counter) return
-
-				if (newPoolState.counter > currentPoolState.counter) {
-					poolsStates.value[newPoolState.poolId] = {
-						...newPoolState,
-						totalLiquidity: BN(newPoolState.totalLiquidity),
-						totalShares: BN(newPoolState.totalShares),
-						withdrawableLiquidity: BN(newPoolState.withdrawableLiquidity),
-					}
+			next: (result) => {
+				if (result.data?.entryLiquidity) {
+					entries.value = result.data.entryLiquidity
 				}
 			},
 			error: console.error,
 		})
 }
 
-const setupSubToEntries = async () => {
-	subEntries.value = await juster.gql
-		.subscription({
-			entryLiquidity: [
-				{
-					where: {
-						pool: {
-							address: {
-								_in: pools.value.map((pool) => pool.address),
-							},
-						},
-						user: { address: { _eq: accountStore.pkh } },
-					},
-				},
-				entryLiquidityModel,
-			],
-		})
-		.subscribe({
-			next: ({ entryLiquidity }) => {
-				entries.value = entryLiquidity
-			},
-			error: console.error,
-		})
-}
-
 const setupSubToPositions = async () => {
-	subPositions.value = await juster.gql
-		.subscription({
-			poolPosition: [
-				{
-					where: {
-						userId: {
-							_eq: accountStore.pkh,
-						},
-					},
-				},
-				poolPositionModel,
-			],
-		})
-		.subscribe({
-			next: ({ poolPosition }) => {
-				poolPosition = poolPosition.map((p) => {
+	if (!juster.gql || !activeAddress.value) return
+
+	const userAddress = activeAddress.value
+
+	// Initial HTTP Query fetch for positions (extremely robust fallback)
+	const queryStr = `
+		query GetPositions($userAddress: String!) {
+			poolPosition(where: { userId: { _eq: $userAddress } }) {
+				id
+				poolId
+				depositedAmount
+				lockedEstimateAmount
+				shares
+				entrySharePrice
+				withdrawnAmount
+				realizedProfit
+				withdrawnShares
+				claims {
+					amount
+					id
+					withdrawn
+					eventId
+					poolId
+					event {
+						result
+						event {
+							betsCloseTime
+							measurePeriod
+						}
+					}
+				}
+				pool {
+					name
+				}
+			}
+		}
+	`
+	try {
+		const res = await juster.gql.query(queryStr, { userAddress }).toPromise()
+		if (res.error) {
+			throw res.error
+		}
+		if (res.data?.poolPosition) {
+			positions.value = res.data.poolPosition.map((p) => {
+				return {
+					...p,
+					shares: BN(p.shares),
+				}
+			})
+		}
+	} catch (e) {
+		console.warn("urql query failed for positions, falling back to native executeQuery:", e)
+		try {
+			const data = await executeQuery(queryStr, { userAddress })
+			if (data?.poolPosition) {
+				positions.value = data.poolPosition.map((p) => {
 					return {
 						...p,
 						shares: BN(p.shares),
 					}
 				})
-				positions.value = poolPosition
+			}
+		} catch (fallbackError) {
+			console.error("Fallback executeQuery for positions failed:", fallbackError)
+		}
+	}
+
+	const subQuery = `
+		subscription WatchPositions($userAddress: String!) {
+			poolPosition(where: { userId: { _eq: $userAddress } }) {
+				id
+				poolId
+				depositedAmount
+				lockedEstimateAmount
+				shares
+				entrySharePrice
+				withdrawnAmount
+				realizedProfit
+				withdrawnShares
+				claims {
+					amount
+					id
+					withdrawn
+					eventId
+					poolId
+					event {
+						result
+						event {
+							betsCloseTime
+							measurePeriod
+						}
+					}
+				}
+				pool {
+					name
+				}
+			}
+		}
+	`
+
+	subPositions.value = juster.gql
+		.subscription(subQuery, {
+			userAddress,
+		})
+		.subscribe({
+			next: (result) => {
+				if (result.data?.poolPosition) {
+					positions.value = result.data.poolPosition.map((p) => {
+						return {
+							...p,
+							shares: BN(p.shares),
+						}
+					})
+				}
 			},
 			error: console.error,
 		})
@@ -306,7 +447,7 @@ onUnmounted(() => {
 watch(
 	() => contracts.value,
 	() => {
-		if (contracts.value.length > 1 && !isInited.value) {
+		if (contracts.value.length >= 1 && !isInited.value) {
 			init()
 		}
 	},
@@ -374,7 +515,7 @@ const { meta } = useMeta({
 					/>
 
 					<MyStatistics
-						v-if="accountStore.pkh"
+						v-if="activeAddress"
 						:positions="positions"
 						:poolsAPY="poolsAPY"
 						:poolsStates="poolsStates"

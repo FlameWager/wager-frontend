@@ -82,9 +82,8 @@ const participantsAvatars = computed(() => {
 
 const userTVL = computed(() => {
 	let tvl = 0
-
-	tvl += props.event.deposits.filter((deposit) => deposit.userId == accountStore.pkh).reduce((a, { amountBelow }) => a + amountBelow, 0)
-	tvl += props.event.bets.filter((bet) => bet.userId == accountStore.pkh).reduce((a, { amount }) => a + amount, 0)
+	tvl += props.event.deposits.filter((deposit) => deposit.userId.toLowerCase() == accountStore.pkh.toLowerCase()).reduce((a, { amountBelow }) => a + amountBelow, 0)
+	tvl += props.event.bets.filter((bet) => bet.user.address.toLowerCase() == accountStore.pkh.toLowerCase()).reduce((a, { amount }) => a + amount, 0)
 
 	return tvl
 })
@@ -185,7 +184,7 @@ const isHighdemand = computed(() => props.event.bets.length >= 4)
 						<template v-if="verifiedMakers[currentNetwork].includes(event.creatorId)">
 							<Flex align="center" gap="6">
 								<Icon name="repeat" size="14" color="secondary" />
-								Recurring event by Juster
+								Recurring event by Wager
 							</Flex>
 						</template>
 						<template v-else> Custom event from user </template>
@@ -271,7 +270,7 @@ const isHighdemand = computed(() => props.event.bets.length >= 4)
 
 				<span
 					>{{ event.bets.length }} stakes&nbsp;&nbsp;•&nbsp;&nbsp;{{
-						numberWithSymbol(event.totalValueLocked.toFixed(0), ",")
+						numberWithSymbol(Number(event.totalValueLocked).toFixed(0), ",")
 					}}
 					liquidity</span
 				>

@@ -14,8 +14,9 @@ import { DateTime } from "luxon"
 /**
  * Services
  */
-import { flameWager, currentNetwork, analytics } from "@sdk"
+import { flameWager, currentNetwork, analytics, approveXTZ, getContractAddresses } from "@sdk"
 import { verifiedMakers } from "~/services/config"
+import { ethers } from "ethers"
 
 /**
  * Local
@@ -75,6 +76,7 @@ export default defineComponent({
 		const slippage = ref(2.5)
 
 		const sendingLiquidity = ref(false)
+		const isApproving = ref(false)
 
 		const liquidityRatio = computed(() => {
 			const abRatio = event.value.poolBelow / event.value.poolAboveEq
@@ -149,6 +151,8 @@ export default defineComponent({
 					text: "Acceptance of stakes is closed",
 					disabled: true,
 				}
+			if (isApproving.value)
+				return { text: "Approving XTZ..", disabled: true }
 			if (sendingLiquidity.value)
 				return { text: "Awaiting confirmation..", disabled: true }
 
@@ -166,57 +170,52 @@ export default defineComponent({
 			aborted: false,
 		})
 
-		const handleProvideLiquidity = () => {
+		const handleProvideLiquidity = async () => {
 			if (buttonState.value.disabled) return
 
-			sendingLiquidity.value = true
+			try {
+				const amountWei = ethers.parseEther(amount.value.toString())
 
-			setTimeout(() => {
-				showHint.confirmationDelay = true
-			}, 5000)
+				// Step 1: Approve XTZ
+				isApproving.value = true
+				const addresses = getContractAddresses()
+				await approveXTZ(addresses.wager, amountWei)
+				isApproving.value = false
 
-			flameWager.sdk
-				.provideLiquidity(
+				// Step 2: Provide Liquidity
+				sendingLiquidity.value = true
+
+				setTimeout(() => {
+					showHint.confirmationDelay = true
+				}, 5000)
+
+				const tx = await flameWager.core.provideLiquidity(
 					event.value.id,
-					new BigNumber(event.value.poolAboveEq),
-					new BigNumber(event.value.poolBelow),
-					new BigNumber(slippage.value / 100),
-					new BigNumber(amount.value),
+					amountWei
 				)
-				.then((op) => {
-					/** Pending transaction label */
-					accountStore.pendingTransaction.awaiting = true
 
-					op.confirmation()
-						.then((result) => {
-							accountStore.pendingTransaction.awaiting = false
+				accountStore.pendingTransaction.awaiting = true
 
-							if (!result.completed) {
-								// todo: handle it?
-							}
-						})
-						.catch((err) => {
-							accountStore.pendingTransaction.awaiting = false
-						})
+				const receipt = await tx.wait()
 
-					sendingLiquidity.value = false
-					showHint.confirmationDelay = false
-					showHint.aborted = false
+				accountStore.pendingTransaction.awaiting = false
+				sendingLiquidity.value = false
+				showHint.confirmationDelay = false
+				showHint.aborted = false
 
-					/** slow notification to get attention */
+				if (receipt.status === 1) {
 					setTimeout(() => {
 						notificationsStore.create({
 							notification: {
 								type: "success",
 								title: "Your liquidity has been accepted",
 								description:
-									"We need to process your bet, it will take 15-30 seconds",
+									"We need to process your deposit, it will take 15-30 seconds",
 								autoDestroy: true,
 							},
 						})
 					}, 700)
 
-					/** analytics */
 					analytics.log("onLiquidity", {
 						eventId: event.value.id,
 						amount: amount.value,
@@ -226,13 +225,19 @@ export default defineComponent({
 					})
 
 					context.emit("onClose")
-				})
-				.catch((err) => {
-					sendingLiquidity.value = false
-					showHint.confirmationDelay = false
+				} else {
+					throw new Error("Transaction failed")
+				}
+			} catch (err) {
+				accountStore.pendingTransaction.awaiting = false
+				sendingLiquidity.value = false
+				isApproving.value = false
+				showHint.confirmationDelay = false
 
-					if (err.title == "Aborted") showHint.aborted = true
-				})
+				if (err?.title == "Aborted" || err?.message?.includes("rejected")) {
+					showHint.aborted = true
+				}
+			}
 		}
 
 		/** Login */
@@ -327,7 +332,7 @@ export default defineComponent({
 				:limit="10000"
 				label="Amount"
 				placeholder="Liquidity amount"
-				subtext="ꜩ"
+				subtext="XTZ"
 				v-model="amount.value"
 			/>
 
@@ -365,10 +370,10 @@ export default defineComponent({
 				size="large"
 				:type="buttonState.disabled ? 'secondary' : 'primary'"
 				block
-				:loading="sendingLiquidity"
+				:loading="sendingLiquidity || isApproving"
 				:disabled="buttonState.disabled"
 			>
-				<Spin v-if="sendingLiquidity" size="16" />
+				<Spin v-if="sendingLiquidity || isApproving" size="16" />
 				<Icon
 					v-else
 					:name="!buttonState.disabled ? 'bolt' : 'lock'"

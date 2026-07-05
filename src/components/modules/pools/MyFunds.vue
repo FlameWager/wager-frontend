@@ -70,7 +70,9 @@ const valueLocked = computed(() => {
 
 	return props.positions
 		.reduce((acc, curr) => {
-			return acc.plus(curr.shares.multipliedBy(props.poolsStates[curr.poolId].sharePrice))
+			const state = props.poolsStates[curr.poolId]
+			if (!state) return acc
+			return acc.plus(curr.shares.multipliedBy(state.sharePrice || 0))
 		}, BN(0))
 		.toNumber()
 })
@@ -157,21 +159,28 @@ const line = computed(() => {
 const currencyPair = ref({})
 const isCurrencyPairFetched = ref(false)
 const getCurrencyPair = async () => {
+	if (!juster.gql || !line.value) return
 	isCurrencyPairFetched.value = true
-	const { currencyPairByPk } = await juster.gql.query({
-		currencyPairByPk: [
-			{
-				id: line.value.currencyPairId,
-			},
-			{
-				id: true,
-				totalEvents: true,
-				symbol: true,
-			},
-		],
-	})
 
-	currencyPair.value = currencyPairByPk
+	const query = `
+		query GetCurrencyPair($id: Int!) {
+			currencyPairByPk(id: $id) {
+				id
+				totalEvents
+				symbol
+			}
+		}
+	`
+
+	const result = await juster.gql
+		.query(query, {
+			id: line.value.currencyPairId,
+		})
+		.toPromise()
+
+	if (result.data?.currencyPairByPk) {
+		currencyPair.value = result.data.currencyPairByPk
+	}
 }
 
 const getClaimReadyTime = (claim) => {
@@ -382,14 +391,14 @@ watch(
 
 							<Flex align="center">
 								<Text size="14" weight="600" color="secondary">
-									{{ parsePoolName(entry.pool.name.replace("Juster Pool: ", "")) }}&nbsp;
+									{{ parsePoolName((pools.find(p => p.address?.toLowerCase() === entry.poolId?.toLowerCase())?.name || entry.pool?.name || "").replace("Juster Pool: ", "")) }}&nbsp;
 								</Text>
 								<Text size="14" weight="600" color="tertiary"> #{{ entry.entryId }} </Text>
 							</Flex>
 						</Flex>
 
 						<Text v-if="!isEntryReadyToManualApprove(entry)" size="14" weight="600" color="secondary">
-							{{ numberWithSymbol(entry.amount, ",") }} ꜩ
+							{{ numberWithSymbol(entry.amount, ",") }} XTZ
 						</Text>
 
 						<Text
@@ -401,7 +410,7 @@ watch(
 							style="cursor: pointer"
 						>
 							Approve
-							{{ numberWithSymbol(entry.amount, ",") }} ꜩ
+							{{ numberWithSymbol(entry.amount, ",") }} XTZ
 						</Text>
 					</Flex>
 				</Flex>
@@ -490,7 +499,7 @@ watch(
 							<Text size="14" weight="600" color="secondary">
 								{{ numberWithSymbol(claim.amount, ",") }}
 							</Text>
-							<Text size="14" weight="600" color="tertiary">ꜩ</Text>
+							<Text size="14" weight="600" color="tertiary">XTZ</Text>
 						</Flex>
 					</Flex>
 				</Flex>

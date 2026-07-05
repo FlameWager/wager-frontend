@@ -143,8 +143,21 @@ const updateStyles = () => {
 				<slot name="content" />
 			</div>
 
-			<router-link v-if="button" :to="button.url">
+			<div v-if="button">
+				<router-link v-if="button.url" :to="button.url">
+					<Button
+						:type="button.type"
+						size="mini"
+						:class="$style.btn"
+						block
+						><Icon :name="button.icon" size="12" />{{
+							button.text
+						}}</Button
+					>
+				</router-link>
 				<Button
+					v-else-if="button.callback"
+					@click="button.callback"
 					:type="button.type"
 					size="mini"
 					:class="$style.btn"
@@ -153,7 +166,7 @@ const updateStyles = () => {
 						button.text
 					}}</Button
 				>
-			</router-link>
+			</div>
 		</div>
 	</div>
 </template>

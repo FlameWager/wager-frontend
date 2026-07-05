@@ -71,3 +71,20 @@ export const EVENT_TVL_QUERY = `
     }
   }
 `
+
+/**
+ * Subscribe to price quotes
+ */
+export const QUOTES_SUBSCRIPTION = `
+  subscription QuotesSubscription($currencyPairId: Int!) {
+    quotesWma(
+      where: { currencyPairId: { _eq: $currencyPairId } }
+      order_by: { timestamp: desc }
+      limit: 1
+    ) {
+      currencyPairId
+      price
+      timestamp
+    }
+  }
+`

@@ -39,7 +39,6 @@ const browseLinks = ref([
 		title: "Ranking",
 		description: "Compete with other users",
 		url: "/rank",
-		disabled: true,
 	},
 ])
 
@@ -49,6 +48,7 @@ const resourcesLinks = ref([
 		title: "Documentation",
 		description: "Everything you need is here",
 		url: "/docs",
+		disabled: true,
 	},
 	{
 		icon: "code_circle",
@@ -62,6 +62,7 @@ const resourcesLinks = ref([
 		title: "Roadmap",
 		description: "Explore the product path",
 		url: "/docs/roadmap",
+		disabled: true,
 	},
 	// {
 	// 	icon: "github",
@@ -72,18 +73,18 @@ const resourcesLinks = ref([
 ])
 
 const communityLinks = ref([
-	{
-		icon: "feather",
-		title: "Blog",
-		description: "Guides & articles from the team",
-		url: "/blog",
-	},
-	{
-		icon: "asterisk",
-		title: "Releases",
-		description: "Detailed list of all changes",
-		url: "/releases",
-	},
+	// {
+	// 	icon: "feather",
+	// 	title: "Blog",
+	// 	description: "Guides & articles from the team",
+	// 	url: "/blog",
+	// },
+	// {
+	// 	icon: "asterisk",
+	// 	title: "Releases",
+	// 	description: "Detailed list of all changes",
+	// 	url: "/releases",
+	// },
 	// {
 	// 	icon: "discord",
 	// 	title: "Discord",
@@ -94,7 +95,7 @@ const communityLinks = ref([
 		icon: "twitter",
 		title: "X",
 		description: "Latest news and updates",
-		url: "https://x.com/wagerEtherlink",
+		url: "https://x.com/wagerAMM",
 	},
 ])
 
@@ -208,7 +209,7 @@ watch(
 								<Icon name="bolt" size="16" color="tertiary" />System Status
 							</Button> -->
 
-							<Button size="small" type="tertiary" link="https://discord.gg/FeGDCkHhnB">
+							<Button size="small" type="tertiary" link="https://x.com/wagerAMM">
 								<Icon name="help" size="16" color="tertiary" />Support
 							</Button>
 						</Flex>
@@ -287,7 +288,7 @@ watch(
 								<Icon name="bolt" size="16" color="tertiary" />System Status
 							</Button> -->
 
-							<Button size="small" type="tertiary" link="https://discord.gg/FeGDCkHhnB">
+							<Button size="small" type="tertiary" link="https://x.com/wagerAMM">
 								<Icon name="help" size="16" color="tertiary" />Support
 							</Button>
 						</Flex>
@@ -370,7 +371,7 @@ watch(
 								<Icon name="bolt" size="16" color="tertiary" />System Status
 							</Button> -->
 
-							<Button size="small" type="tertiary" link="https://discord.gg/FeGDCkHhnB">
+							<Button size="small" type="tertiary" link="https://x.com/wagerAMM">
 								<Icon name="help" size="16" color="tertiary" />Support
 							</Button>
 						</Flex>

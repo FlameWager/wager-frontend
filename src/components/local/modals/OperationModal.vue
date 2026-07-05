@@ -157,7 +157,7 @@ const getTypeOfOperation = () => {
 										: data.amountBelow,
 								)[1]
 							}}
-							ꜩ
+							XTZ
 						</span>
 					</div>
 
@@ -167,10 +167,10 @@ const getTypeOfOperation = () => {
 								numberWithSymbol(
 									(data.amount
 										? data.amount *
-										  marketStore.markets["XTZ-USD"]
+										  marketStore.markets["MEZO-USD"]
 												.quotes[0].price
 										: data.amountBelow *
-										  marketStore.markets["XTZ-USD"]
+										  marketStore.markets["MEZO-USD"]
 												.quotes[0].price
 									).toFixed(2),
 									",",
@@ -178,9 +178,9 @@ const getTypeOfOperation = () => {
 							}}
 						</template>
 						<template v-else>
-							1 TIA = ${{
+							1 XTZ = ${{
 								marketStore.markets[
-									"XTZ-USD"
+									"MEZO-USD"
 								].quotes[0].price.toFixed(2)
 							}}
 						</template>

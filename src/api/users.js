@@ -4,29 +4,33 @@
  */
 
 import { flameWager } from "@/services/sdk"
-import { user as userModel, userWithPositions, withdrawal, userStatistics } from "@/graphql/models"
+import { pipe, subscribe } from "wonka"
+import { executeQuery } from "./graphql"
+import {
+  USER_BY_ADDRESS_QUERY,
+  USER_WITH_POSITIONS_QUERY,
+  USER_WITHDRAWALS_QUERY,
+  USER_STATISTICS_QUERY,
+  LEADERBOARD_QUERY,
+  LEADERBOARD_BETTORS_QUERY,
+  LEADERBOARD_PROVIDERS_QUERY,
+  USER_SUBSCRIPTION
+} from "@/graphql/users"
 
 /**
  * Fetch user by address
- * @param {string} address - User wallet address
+ * @param {Object} params
+ * @param {string} params.address - User wallet address
  * @returns {Promise<Object|null>} User object or null
  */
-export const fetchUser = async (address) => {
+export const fetchUser = async ({ address }) => {
   try {
     if (!address) {
       throw new Error("Address is required")
     }
 
-    const { usersByPk } = await flameWager.gql.query({
-      usersByPk: [
-        {
-          address,
-        },
-        userModel,
-      ],
-    })
-
-    return usersByPk || null
+    const data = await executeQuery(USER_BY_ADDRESS_QUERY, { address })
+    return data?.userByPk || null
   } catch (error) {
     console.error(
       `Error fetching user ${address}: ${error.name}: ${error.message}`
@@ -46,16 +50,8 @@ export const fetchUserWithPositions = async (address) => {
       throw new Error("Address is required")
     }
 
-    const { usersByPk } = await flameWager.gql.query({
-      usersByPk: [
-        {
-          address,
-        },
-        userWithPositions,
-      ],
-    })
-
-    return usersByPk || null
+    const data = await executeQuery(USER_WITH_POSITIONS_QUERY, { address })
+    return data?.userByPk || null
   } catch (error) {
     console.error(
       `Error fetching user positions ${address}: ${error.name}: ${error.message}`
@@ -77,18 +73,8 @@ export const fetchUserWithdrawals = async ({ address, limit = 100 }) => {
       throw new Error("Address is required")
     }
 
-    const { withdrawals } = await flameWager.gql.query({
-      withdrawals: [
-        {
-          where: { user: { address: { _eq: address } } },
-          order_by: { timestamp: "desc" },
-          limit,
-        },
-        withdrawal,
-      ],
-    })
-
-    return withdrawals || []
+    const data = await executeQuery(USER_WITHDRAWALS_QUERY, { address, limit })
+    return data?.withdrawal || []
   } catch (error) {
     console.error(
       `Error fetching withdrawals for ${address}: ${error.name}: ${error.message}`
@@ -108,17 +94,8 @@ export const fetchUserStatistics = async (address) => {
       throw new Error("Address is required")
     }
 
-    const { userStatistics: stats } = await flameWager.gql.query({
-      userStatistics: [
-        {
-          where: { address: { _eq: address } },
-          limit: 1,
-        },
-        userStatistics,
-      ],
-    })
-
-    return stats?.[0] || null
+    const data = await executeQuery(USER_STATISTICS_QUERY, { address })
+    return data?.userStatistics?.[0] || null
   } catch (error) {
     console.error(
       `Error fetching statistics for ${address}: ${error.name}: ${error.message}`
@@ -128,33 +105,20 @@ export const fetchUserStatistics = async (address) => {
 }
 
 /**
- * Fetch leaderboard (top users by winnings)
+ * Fetch leaderboard (top users by winnings or liquidity)
  * @param {Object} [params]
  * @param {number} [params.limit] - Max number of users
- * @returns {Promise<Array>} Array of users sorted by winnings
+ * @param {string} [params.type] - Leaderboard type ('bettors' or 'providers')
+ * @returns {Promise<Array>} Array of users
  */
-export const fetchLeaderboard = async ({ limit = 20 } = {}) => {
+export const fetchLeaderboard = async ({ limit = 20, type = 'bettors' } = {}) => {
   try {
-    const { users } = await flameWager.gql.query({
-      users: [
-        {
-          order_by: { totalWinnings: "desc" },
-          limit,
-          where: { totalBetsCount: { _gt: 0 } },
-        },
-        {
-          address: true,
-          totalBetsCount: true,
-          totalBetsAmount: true,
-          totalWinnings: true,
-        },
-      ],
-    })
-
-    return users || []
+    const query = type === 'providers' ? LEADERBOARD_PROVIDERS_QUERY : LEADERBOARD_BETTORS_QUERY
+    const data = await executeQuery(query, { limit })
+    return data?.user || []
   } catch (error) {
     console.error(
-      `Error fetching leaderboard: ${error.name}: ${error.message}`
+      `Error fetching leaderboard (${type}): ${error.name}: ${error.message}`
     )
     return []
   }
@@ -168,29 +132,39 @@ export const fetchLeaderboard = async ({ limit = 20 } = {}) => {
  */
 export const subscribeToUser = (address, onUpdate) => {
   try {
-    return flameWager.gql
-      .subscription({
-        usersByPk: [
-          {
-            address,
-          },
-          userModel,
-        ],
+    if (!address) {
+      return { unsubscribe: () => { } }
+    }
+
+    if (typeof onUpdate !== 'function') {
+      throw new Error("onUpdate callback is required")
+    }
+
+    if (!flameWager.gql) {
+      console.warn("GraphQL client not initialized")
+      return { unsubscribe: () => { } }
+    }
+
+    // Use Wonka pipe and subscribe for URQL subscriptions
+    const { unsubscribe } = pipe(
+      flameWager.gql.subscription(USER_SUBSCRIPTION, { address }),
+      subscribe((result) => {
+        if (result.error) {
+          console.error("User subscription error:", result.error)
+          return
+        }
+
+        if (result?.data?.userByPk) {
+          onUpdate(result.data.userByPk)
+        }
       })
-      .subscribe({
-        next: (data) => {
-          if (data.usersByPk) {
-            onUpdate(data.usersByPk)
-          }
-        },
-        error: (error) => {
-          console.error(`User subscription error: ${error}`)
-        },
-      })
+    )
+
+    return { unsubscribe }
   } catch (error) {
     console.error(
       `Error subscribing to user ${address}: ${error.name}: ${error.message}`
     )
-    return { unsubscribe: () => {} }
+    return { unsubscribe: () => { } }
   }
 }

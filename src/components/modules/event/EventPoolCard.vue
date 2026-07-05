@@ -30,6 +30,7 @@ const router = useRouter()
 const pool = computed(() =>
 	marketStore.lines.find((l) => l.currencyPairId === props.event.currencyPair.id && l.measurePeriod === props.event.measurePeriod),
 )
+
 </script>
 
 <template>
@@ -41,7 +42,7 @@ const pool = computed(() =>
 
 		<Pool :event="event" />
 
-		<router-link v-if="marketStore.lines.length" :to="`/pools/${pool.poolId}`">
+		<router-link v-if="pool" :to="`/pools/${pool.poolId}`">
 			<Button type="secondary" size="medium" block keybind="D+L" @onKeybind="router.push(`/pools/${pool.poolId}`)">
 				<Icon name="server" size="12" />Deposit Liquidity
 			</Button>

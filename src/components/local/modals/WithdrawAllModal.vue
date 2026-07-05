@@ -72,11 +72,11 @@ export default defineComponent({
 			return {
 				text: `Withdraw ${numberWithSymbol(
 					selectedPositions.value.reduce(
-						(acc, curr) => acc + curr.value,
+						(acc, curr) => acc + (Number(curr.value) || 0),
 						0,
 					),
 					",",
-				)} ꜩ`,
+				)} XTZ`,
 				disabled: false,
 			}
 		})
@@ -110,31 +110,55 @@ export default defineComponent({
 
 			awaitingConfirmation.value = true
 
-			const result = await withdrawAll({
-				eventIds: selectedEventsIds,
-				address: accountStore.pkh,
-			})
-
-			if (result.success) {
-				context.emit("onClose")
-				awaitingConfirmation.value = false
-
+			try {
+				const tx = await withdrawAll(selectedEventsIds)
+				
 				notificationsStore.create({
 					notification: {
 						type: "success",
 						title: "Batch request sent",
-						description: `Wait for confirmation of the operation to continue (${result.op})`,
+						description: "Processing takes about 10-30 seconds. Funds will appear in your wallet soon",
 						autoDestroy: true,
 					},
 				})
-			} else {
-				awaitingConfirmation.value = false
 
+				tx.wait()
+					.then((receipt) => {
+						context.emit("onClose")
+						awaitingConfirmation.value = false
+
+						notificationsStore.create({
+							notification: {
+								type: "success",
+								title: "Withdrawal successful",
+								description: "Your funds have been transferred to your wallet",
+								autoDestroy: true,
+							},
+						})
+						
+						// Update global state if needed
+						accountStore.positionsForWithdrawal = accountStore.positionsForWithdrawal.filter(
+							(pos) => !selectedEventsIds.includes(pos.event.id)
+						)
+					})
+					.catch((err) => {
+						awaitingConfirmation.value = false
+						notificationsStore.create({
+							notification: {
+								type: "warning",
+								title: "Withdrawal failed",
+								description: "The transaction was reverted",
+								autoDestroy: true,
+							},
+						})
+					})
+			} catch (error) {
+				awaitingConfirmation.value = false
 				notificationsStore.create({
 					notification: {
 						type: "warning",
-						title: result.title,
-						description: result.message,
+						title: "Withdrawal failed",
+						description: error.message || "Something went wrong",
 						autoDestroy: true,
 					},
 				})
@@ -269,9 +293,9 @@ export default defineComponent({
 							<div :class="$style.subname">
 								Event: #{{ position.event.id }},
 								amount:&nbsp;<span>{{
-									position.value.toFixed(2)
+									Number(position.value).toFixed(2)
 								}}</span
-								>&nbsp;ꜩ
+								>&nbsp;XTZ
 							</div>
 						</Flex>
 					</div>

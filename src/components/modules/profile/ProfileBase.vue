@@ -80,8 +80,8 @@ export default defineComponent({
 		}
 
 		onMounted(() => {
-			if (address.value.length !== 36 || (!isMyProfile.value && accountStore.pkh == address.value)) {
-				router.push("/profile")
+			if (!address.value || (address.value.length !== 42 && address.value.length !== 36)) {
+				isProfileLoaded.value = true
 				return
 			}
 
@@ -91,6 +91,15 @@ export default defineComponent({
 		watch(router.currentRoute, () => {
 			getUserData()
 		})
+
+		watch(
+			() => address.value,
+			() => {
+				if (address.value && (address.value.length === 42 || address.value.length === 36)) {
+					getUserData()
+				}
+			},
+		)
 
 		const handleCopyAddress = () => {
 			toClipboard(address.value)
@@ -160,7 +169,14 @@ export default defineComponent({
 					<Icon name="copy" size="14" />
 				</div>
 
-				<div :class="$style.status">{{ isMyProfile ? accountStore.balance : balance }} ꜩ</div>
+				<Flex direction="column" align="center" gap="4" :class="$style.status">
+					<Text size="14" weight="600" color="secondary">
+						{{ isMyProfile ? accountStore.balance : balance }} XTZ
+					</Text>
+					<Text v-if="isMyProfile" size="12" weight="600" color="tertiary">
+						{{ accountStore.btcBalance }} BTC
+					</Text>
+				</Flex>
 
 				<div :class="$style.progress">
 					<div :class="$style.head">
@@ -193,7 +209,7 @@ export default defineComponent({
 						<div :class="$style.value">
 							{{ abbreviateNumber(user.totalLiquidityProvided) }}
 
-							<span>ꜩ</span>
+							<span>XTZ</span>
 						</div>
 					</div>
 
@@ -202,7 +218,7 @@ export default defineComponent({
 
 						<div :class="$style.value">
 							{{ abbreviateNumber(user.totalProviderReward) }}
-							<span>ꜩ</span>
+							<span>XTZ</span>
 						</div>
 					</div>
 
@@ -211,7 +227,7 @@ export default defineComponent({
 
 						<div :class="$style.value">
 							{{ user.totalFeesCollected.toFixed(0) }}
-							<span>ꜩ</span>
+							<span>XTZ</span>
 						</div>
 					</div>
 				</div>
@@ -224,7 +240,7 @@ export default defineComponent({
 
 						<div :class="$style.value">
 							{{ user.totalBetsAmount }}
-							<span>ꜩ</span>
+							<span>XTZ</span>
 						</div>
 					</div>
 
@@ -233,7 +249,7 @@ export default defineComponent({
 
 						<div :class="$style.value">
 							{{ abbreviateNumber(user.totalWithdrawn) }}
-							<span>ꜩ</span>
+							<span>XTZ</span>
 						</div>
 					</div>
 
@@ -256,10 +272,10 @@ export default defineComponent({
 
 				<div :class="$style.additional">
 					<div :class="$style.left">
-						<a :href="`https://${currentNetwork == 'mainnet' ? '' : 'ghostnet.'}tzkt.io/${address}`" target="_blank">
+						<a :href="`https://explorer.test.mezo.org/address/${address}`" target="_blank">
 							<Button type="secondary" size="small">
 								<Icon name="database" size="14" />
-								View on TzKT
+								View on Explorer
 							</Button>
 						</a>
 					</div>
@@ -303,7 +319,7 @@ export default defineComponent({
 			<router-link to="/">
 				<Button type="secondary" size="small">
 					<Icon name="spark" size="14" />
-					Explore Juster
+					Explore Wager
 				</Button>
 			</router-link>
 

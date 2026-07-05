@@ -131,7 +131,7 @@ export default defineComponent({
                 <div :class="$style.size">
                     <Icon name="money" size="12" />
                     {{ aboveAmount.toFixed(0) }}
-                    <span>ꜩ</span>
+                    <span>XTZ</span>
                 </div>
             </div>
 
@@ -139,7 +139,7 @@ export default defineComponent({
                 <div :class="$style.size">
                     <Icon name="money" size="12" />
                     {{ belowAmount.toFixed(0) }}
-                    <span>ꜩ</span>
+                    <span>XTZ</span>
                 </div>
 
                 <div :class="$style.dot" />

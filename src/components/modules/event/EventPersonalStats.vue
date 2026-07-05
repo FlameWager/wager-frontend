@@ -53,11 +53,11 @@ const returnOnBets = computed(() => {
 	let reward = 0
 
 	if (props.event.status == "FINISHED") {
-		reward = props.userBets.reduce((acc, { side, reward }) => {
-			return side == props.event.winnerBets ? (acc += Number(reward)) : acc
+		reward = props.userBets.reduce((acc, { side, payout }) => {
+			return side == props.event.winnerBets ? (acc += Number(payout)) : acc
 		}, 0)
 	} else {
-		reward = props.userBets.reduce((acc, { reward }) => (acc += Number(reward)), 0)
+		reward = props.userBets.reduce((acc, { payout, minimalWinAmount }) => (acc += Number(payout || minimalWinAmount || 0)), 0)
 	}
 
 	return reward
@@ -65,7 +65,7 @@ const returnOnBets = computed(() => {
 
 const potentialProfit = computed(() =>
 	props.userBets.reduce(
-		(acc, { amount, reward }) => (acc += Number(reward) - Number(amount)),
+		(acc, { amount, payout, minimalWinAmount }) => (acc += Number(payout || minimalWinAmount || 0)),
 		0,
 	),
 )

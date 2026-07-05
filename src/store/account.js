@@ -10,7 +10,7 @@ import {
   switchChain
 } from '@wagmi/core';
 import { injected, metaMask } from '@wagmi/vue/connectors'
-import { config, activeRpcNode, activeChainConfig } from "@config";
+import { config, activeRpcNode, activeChainConfig, XTZ_ADDRESS } from "@config";
 
 export const useAccountStore = defineStore({
   id: 'account',
@@ -21,6 +21,7 @@ export const useAccountStore = defineStore({
     pkh: "", // Using pkh instead of address for consistency
     chainId: null,
     balance: "0",
+    btcBalance: "0",
     isConnecting: false,
 
     pendingTransaction: {
@@ -136,15 +137,18 @@ export const useAccountStore = defineStore({
       if (!this.pkh) return;
 
       try {
-        const balanceData = await getBalance(config, {
+        // Fetch native XTZ balance (main betting currency)
+        const nativeBalanceData = await getBalance(config, {
           address: this.pkh,
           chainId: activeChainConfig.id,
         });
-
-        this.balance = ethers.formatEther(balanceData.value);
+        const bal = ethers.formatEther(nativeBalanceData.value);
+        this.balance = bal;
+        this.btcBalance = bal;
       } catch (error) {
-        console.error('Error fetching balance:', error);
+        console.error('Error fetching balances:', error);
         this.balance = "0";
+        this.btcBalance = "0";
       }
     },
 

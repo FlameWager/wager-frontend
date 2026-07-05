@@ -80,7 +80,7 @@ const btnType = computed(() => {
 })
 
 const isFinished = computed(() => {
-	return props.event.status === "FINISHED" || props.event.status === "CANCELED"
+	return props.event.status === "CLOSED" || props.event.status === "CANCELED"
 })
 </script>
 
@@ -162,12 +162,12 @@ const isFinished = computed(() => {
 		</template>
 
 		<Button v-else @click.prevent="handleWithdraw" :type="btnType" size="small" :disabled="isWithdrawDisabled" block>
-			<template v-if="successfulWithdrawal">Successfully withdrawn {{ successfulWithdrawal?.amount.toFixed(2) }} {{activeChainConfig.nativeCurrency.symbol}}</template>
+			<template v-if="successfulWithdrawal">Successfully withdrawn {{ successfulWithdrawal?.amount.toFixed(2) }} {{"XTZ"}}</template>
 
 			<template v-else-if="accountStore.pendingTransaction.awaiting"> Can`t withdraw right now </template>
 
 			<template v-else-if="!isWithdrawing && positionForWithdraw">
-				<Icon name="coins" size="16" />Withdraw {{ numberWithSymbol(positionForWithdraw.value, ",") }} {{activeChainConfig.nativeCurrency.symbol}}
+				<Icon name="coins" size="16" />Withdraw {{ numberWithSymbol(positionForWithdraw.value, ",") }} {{"XTZ"}}
 			</template>
 
 			<template v-else-if="!isWon && isInvolved">No funds to withdraw</template>

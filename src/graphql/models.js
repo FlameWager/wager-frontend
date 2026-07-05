@@ -242,6 +242,10 @@ export const withdrawal = {
  */
 export const pool = {
   address: true,
+  name: true,
+  version: true,
+  entryLockPeriod: true,
+  isDepositPaused: true,
   totalDeposits: true,
   totalRewards: true,
   totalShares: true,

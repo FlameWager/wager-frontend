@@ -10,8 +10,9 @@ import BN from "bignumber.js"
 /**
  * Services
  */
-import { flameWager, currentNetwork, analytics, placeBet } from "@sdk"
+import { flameWager, currentNetwork, analytics, placeBet, approveXTZ, getContractAddresses } from "@sdk"
 import { verifiedMakers, supportedMarkets } from "~/services/config"
+import { ethers } from "ethers"
 import { sanitizeInput, getCurrencyIcon } from "@utils/misc"
 import { numberWithSymbol } from "@utils/amounts"
 import { toReadableDuration } from "@utils/date"
@@ -106,6 +107,7 @@ const handleKeydown = (e) => {
 }
 
 const sendingBet = ref(false)
+const isApproving = ref(false)
 
 const balanceToAmountRatio = computed(() => {
 	const percent = (amount.value * 100) / accountStore.balance
@@ -271,6 +273,7 @@ const buttonState = computed(() => {
 	}
 
 	if (countdownStatus.value !== "In progress") return { text: "Acceptance of stakes is closed", disabled: true }
+	if (isApproving.value) return { text: "Approving XTZ..", disabled: true }
 	if (sendingBet.value) return { text: "Awaiting confirmation..", disabled: true }
 
 	if (parseFloat(amount.value) > accountStore.balance) return { text: "Insufficient funds", disabled: true }
@@ -305,12 +308,17 @@ const handleUserTransactionConfirmation = async () => {
 	sendingBet.value = true
 
 	try {
-		// Convert amounts to wei using ethers
-		const { ethers } = await import("ethers")
 		const amountWei = ethers.parseEther(amount.value.toString())
 		const minRewardWei = ethers.parseEther(minReward.value.toString())
 
-        // Call the SDK function
+        // Step 1: Approve XTZ
+        isApproving.value = true
+        const addresses = getContractAddresses()
+        await approveXTZ(addresses.wager, amountWei)
+        isApproving.value = false
+
+        // Step 2: Place the bet
+        sendingBet.value = true
         const tx = await placeBet(
             props.event.id,
             side.value === "Rise" ? "aboveEq" : "below",
@@ -348,7 +356,7 @@ const handleUserTransactionConfirmation = async () => {
 				tts: DateTime.fromISO(props.event.betsCloseTime).ts - DateTime.now().ts,
 			})
 
-			emit("onBet", { side: side.value, amount: amount.value })
+			emit("onBet", { side: side.value, amount: amount.value, payout: reward.value })
 			emit("onClose")
 		} else {
 			throw { description: "Transaction failed" }
@@ -356,6 +364,7 @@ const handleUserTransactionConfirmation = async () => {
 	} catch (err) {
 		accountStore.pendingTransaction.awaiting = false
 		sendingBet.value = false
+		isApproving.value = false
 
 		// Map Solidity errors to user-friendly messages
 		const errorMessage = mapContractError(err)
@@ -628,8 +637,8 @@ const mapContractError = (err) => {
 				</Flex>
 			</Flex>
 
-			<Button @click="handleStake" size="large" type="primary" block :loading="sendingBet" :disabled="buttonState.disabled">
-				<LoadingBar v-if="sendingBet" size="16" />
+			<Button @click="handleStake" size="large" type="primary" block :loading="sendingBet || isApproving" :disabled="buttonState.disabled">
+				<LoadingBar v-if="sendingBet || isApproving" size="16" />
 				<template v-else>
 					<Icon name="login" size="16" />
 					{{ buttonState.text }}

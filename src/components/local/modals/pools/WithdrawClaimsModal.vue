@@ -280,9 +280,9 @@ const buttonState = computed(() => {
 
 						<Flex>
 							<Text size="14" weight="600" color="primary">
-								{{ numberWithSymbol(availableClaims.reduce((acc, { amount }) => (acc += amount), 0).toFixed(2), ",") }}
+								{{ numberWithSymbol(Number(availableClaims.reduce((acc, { amount }) => (acc += amount), 0)).toFixed(2), ",") }}
 							</Text>
-							<Text size="14" weight="600" color="tertiary"> &nbsp;ꜩ </Text>
+							<Text size="14" weight="600" color="tertiary"> &nbsp;XTZ </Text>
 						</Flex>
 					</Flex>
 
@@ -306,7 +306,7 @@ const buttonState = computed(() => {
 						<Text size="12" weight="600" color="tertiary"> Claims to withdraw </Text>
 						<Text v-if="pendingClaims.length" size="12" weight="600" color="support">
 							Next available claim in
-							{{ nextClaim.diff.minutes.toFixed(0) }} min
+							{{ Number(nextClaim.diff.minutes).toFixed(0) }} min
 						</Text>
 					</Flex>
 
@@ -325,9 +325,9 @@ const buttonState = computed(() => {
 
 							<Flex>
 								<Text size="14" weight="600" color="primary">
-									{{ numberWithSymbol(claim.amount.toFixed(2), ",") }}
+									{{ numberWithSymbol(Number(claim.amount).toFixed(2), ",") }}
 								</Text>
-								<Text size="14" weight="600" color="tertiary"> &nbsp;ꜩ </Text></Flex
+								<Text size="14" weight="600" color="tertiary"> &nbsp;XTZ </Text></Flex
 							>
 						</Flex>
 					</Flex>

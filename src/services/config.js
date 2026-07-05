@@ -3,6 +3,7 @@ import { injected, metaMask, safe, walletConnect } from '@wagmi/vue/connectors'
 
 // Get network type from environment variable
 export const NETWORK_TYPE = import.meta.env.VITE_NETWORK_TYPE || 'testnet';
+export const XTZ_ADDRESS = import.meta.env.VITE_XTZ_ADDRESS || "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503"
 // const projectId = '<WALLETCONNECT_PROJECT_ID>'
 
 export const chainConfig = {
@@ -116,6 +117,7 @@ export const sanity = {
 export const verifiedMakers = {
   testnet: [
     "0x6f8c8eb1d40cd2b9918334e7e82db9bc9df4e8b8",
+    "0x57e32313C244c7068aa5231C867e27caD4a62635",
   ],
   mainnet: [
     "0x6f8c8eb1d40cd2b9918334e7e82db9bc9df4e8b8",
@@ -124,8 +126,8 @@ export const verifiedMakers = {
 
 export const contracts = {
   testnet: {
-    oracle: "0xC56684d7B3414880c8A035aeFcE0ca1fC7d2296A",
-    wager: "0xc786c862682F3CAa00f9460e5f4F672444aBA41c",
-    pool: "0x451aCE7b6473BDecfC32f757c015bF7587893cE0",
+    oracle: "0x602af77b8e7b5f97b0b6648dcfaa50c95a7ec3ea",
+    wager: "0xdE4ce3A932bb72459d8F355aB2272227bE3B31dC",
+    pool: "0x57e32313C244c7068aa5231C867e27caD4a62635",
   },
 }

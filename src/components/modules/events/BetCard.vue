@@ -33,13 +33,17 @@ const isWon = computed(() => props.bet.betType == props.event?.winnerBets)
 
 const showOperationModal = ref(false)
 
-const side = computed(() => (props.bet.betType == "ABOVE_EQ" ? "Up" : "Down"))
+const side = computed(() => {
+	if (props.bet.betType) return props.bet.betType == "ABOVE_EQ" ? "Up" : "Down"
+	if (props.bet.side) return props.bet.side == "Rise" ? "Up" : "Down"
+	return "Down"
+})
 
 const amount = computed(() => Number(props.bet.amount || 0))
-const reward = computed(() => Number(props.bet.reward || 0))
+const reward = computed(() => Number(props.bet.payout || props.bet.minimalWinAmount || 0))
 
 const formattedAmount = computed(() => amount.value.toFixed(2))
-const formattedDiff = computed(() => (reward.value - amount.value).toFixed(2))
+const formattedDiff = computed(() => (reward.value).toFixed(2))
 </script>
 
 <template>
@@ -52,13 +56,13 @@ const formattedDiff = computed(() => (reward.value - amount.value).toFixed(2))
 
 				<Spin v-else size="16" />
 
-				<router-link :to="`/profile/${pending ? accountStore.pkh : bet.userId}`" :class="$style.user_avatar">
-					<img :src="`https://services.tzkt.io/v1/avatars/${pending ? accountStore.pkh : bet.userId}`" alt="avatar" />
+				<router-link :to="`/profile/${pending ? accountStore.pkh : bet.user.address}`" :class="$style.user_avatar">
+					<img :src="`https://services.tzkt.io/v1/avatars/${pending ? accountStore.pkh : bet.user.address}`" alt="avatar" />
 				</router-link>
 			</div>
 
 			<div :class="$style.info">
-				<div v-if="!pending" :class="$style.title">{{ accountStore.pkh == bet.userId ? "My" : "" }} Stake</div>
+				<div v-if="!pending" :class="$style.title">{{ accountStore.pkh == bet.user.address ? "My" : "" }} Stake</div>
 
 				<div v-else :class="$style.title">Pending Stake</div>
 
@@ -98,7 +102,7 @@ const formattedDiff = computed(() => (reward.value - amount.value).toFixed(2))
 				<span>XTZ</span>
 			</div>
 
-			<div v-else-if="['NEW', 'STARTED'].includes(event.status)" :class="$style.param">
+			<div v-else-if="['NEW', 'MEASUREMENT_STARTED'].includes(event.status)" :class="$style.param">
 				{{ numberWithSymbol(formattedDiff, ",") }}&nbsp;
 				<span>XTZ</span>
 			</div>
@@ -142,7 +146,7 @@ const formattedDiff = computed(() => (reward.value - amount.value).toFixed(2))
 				</div>
 			</div>
 
-			<div v-else-if="['NEW', 'STARTED'].includes(event.status)" :class="$style.param">
+			<div v-else-if="['NEW', 'MEASUREMENT_STARTED'].includes(event.status)" :class="$style.param">
 				<div :class="$style.key">Amount</div>
 
 				<div :class="$style.value">

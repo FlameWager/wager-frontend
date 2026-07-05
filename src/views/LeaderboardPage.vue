@@ -9,18 +9,18 @@ import Page from "@base/Page.vue"
 /**
  * Module
  */
-import MarketBase from "@modules/symbols/MarketBase.vue"
-
+import LeaderboardBase from "@modules/leaderboard/LeaderboardBase.vue"
+import ExploreBase from "@modules/explore/ExploreBase.vue"
 export default defineComponent({
-	name: "MarketPage",
+	name: "LeaderboardPage",
 
-	components: { Page, MarketBase },
+	components: { Page, LeaderboardBase, ExploreBase },
 })
 </script>
 
 <template>
 	<Page>
-		<MarketBase />
+		<LeaderboardBase />
 	</Page>
 </template>
 

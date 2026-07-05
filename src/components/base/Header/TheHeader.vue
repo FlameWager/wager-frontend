@@ -67,7 +67,7 @@ const showMobileMenu = ref(false)
 /** hardcoded active links */
 const isActive = (linkName) => {
 	if (linkName === "Browse") {
-		if (["Explore", "Events", "Markets", "Ranking", "Market", "Event", "Liquidity Pools", "Liquidity Pool"].includes(route.name))
+		if (["Explore", "Events", "Markets", "Ranking", "Rating", "Market", "Event", "Liquidity Pools", "Liquidity Pool"].includes(route.name))
 			return true
 	}
 
@@ -201,7 +201,7 @@ const pkh = computed(() => accountStore.pkh)
 
 								<div :class="$style.mobile_menu__description">Communication and discussion</div>
 							</a> -->
-							<a href="https://x.com/wagerEtherlink" target="_blank" :class="$style.mobile_menu__link">
+							<a href="https://x.com/wagerAMM" target="_blank" :class="$style.mobile_menu__link">
 								<div :class="$style.left">
 									<Icon name="twitter" size="14" />
 									<span>X</span>

@@ -174,7 +174,7 @@ watch(
 								}}
 							</Text>
 							<Text size="14" weight="600" color="tertiary">
-								&nbsp;{{activeChainConfig.nativeCurrency.symbol}}
+								&nbsp;{{"XTZ"}}
 							</Text>
 						</Flex>
 					</Flex>
@@ -323,7 +323,7 @@ watch(
 							}}
 						</Text>
 						<Text size="14" weight="600" color="tertiary">
-							&nbsp;{{activeChainConfig.nativeCurrency.symbol}}
+							&nbsp;{{"XTZ"}}
 						</Text>
 					</Flex>
 				</Flex>

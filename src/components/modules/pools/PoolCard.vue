@@ -109,7 +109,7 @@ const handleDeposit = () => {
 			notificationsStore.create({
 				notification: {
 					type: "warning",
-					title: `"${props.pool.name.replace("Juster Pool: ", "")} pool" is paused`,
+						title: `"${pool?.name ? pool.name.replace("Wager Pool: ", "") : 'Unnamed pool'}" is paused`,
 					description: "It may be restored soon, try again later. ",
 					autoDestroy: true,
 				},
@@ -130,6 +130,7 @@ const isDepositAvailable = computed(() => {
 })
 
 const valueLocked = computed(() => {
+	if (!props.position?.shares || !props.state?.sharePrice) return BN(0)
 	return props.position.shares.multipliedBy(props.state.sharePrice)
 })
 
@@ -164,7 +165,7 @@ const copy = (target) => {
 				autoDestroy: true,
 				badges: [
 					{
-						secondaryText: `ghostnet.tzkt.io/${shorten(props.pool.address)}`,
+						secondaryText: `explorer.test.mezo.org/${shorten(props.pool.address)}`,
 						icon: "explorer",
 					},
 				],
@@ -172,19 +173,19 @@ const copy = (target) => {
 				actions: [
 					{
 						name: "Open in new tab",
-						callback: () => window.open(`https://ghostnet.tzkt.io/${props.pool.address}`, "_blank"),
+						callback: () => window.open(`https://explorer.test.mezo.org/address/${props.pool.address}`, "_blank"),
 					},
 				],
 			},
 		})
 
-		toClipboard(`https://ghostnet.tzkt.io/${props.pool.address}`)
+		toClipboard(`https://explorer.test.mezo.org/address/${props.pool.address}`)
 	}
 }
 </script>
 
 <template>
-	<Flex @click="router.push(`/pools/${pool.address}`)" direction="column" gap="32" tabindex="0" :class="$style.wrapper">
+	<Flex direction="column" gap="32" tabindex="0" :class="$style.wrapper">
 		<Flex justify="between">
 			<Flex align="center" gap="16">
 				<div :class="$style.symbols">
@@ -194,7 +195,7 @@ const copy = (target) => {
 
 				<Flex direction="column" gap="8">
 					<Text size="14" color="primary" weight="600">
-						{{ parsePoolName(pool?.name.replace("Juster Pool: ", "")) }}
+						{{ pool?.name ? parsePoolName(pool.name.replace("Juster Pool: ", "")) : 'Unnamed Pool' }}
 					</Text>
 
 					<Flex align="center" gap="4">
@@ -213,13 +214,13 @@ const copy = (target) => {
 			<Flex gap="8">
 				<Tooltip
 					placement="left"
-					:button="{
+					:button="!accountStore.pkh ? {
 						icon: 'login',
 						text: 'Connect Wallet',
-						url: '/connect',
+						callback: () => accountStore.connectWallet(),
 						type: 'primary',
-					}"
-					:disabled="!!isDepositAvailable"
+					} : null"
+					:disabled="!!isDepositAvailable || (!!accountStore.pkh && !state)"
 				>
 					<Button
 						@click.stop="handleDeposit"
@@ -233,8 +234,9 @@ const copy = (target) => {
 
 					<template #content>
 						{{
-							(pool.isDepositPaused && "The pool has been paused") ||
-							(!accountStore.pkh && "Connect a wallet to make a deposit")
+							pool.isDepositPaused ? "The pool has been paused" : 
+							(!accountStore.pkh ? "Connect a wallet to make a deposit" : 
+							(!state ? "Waiting for pool data..." : ""))
 						}}
 					</template>
 				</Tooltip>

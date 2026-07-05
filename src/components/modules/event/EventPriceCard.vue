@@ -41,11 +41,11 @@ const finishTimeText = computed(() => {
 
 					<div v-if="event.status == 'NEW'" :class="$style.price">TBD</div>
 					<div v-else :class="$style.price">
-						<!-- {{ disaggregate(event.startRate * 100)[0] }}.<span>{{ disaggregate(event.startRate * 100)[1] }}</span> -->
+						{{ disaggregate(event.startRate)[0] }}.<span>{{ disaggregate(event.startRate)[1] }}</span>
 					</div>
 				</div>
 
-				<div :class="[$style.dots, event.status == 'STARTED' && finishTime.m > 0 && $style.anim]">
+				<div :class="[$style.dots, event.status == 'MEASUREMENT_STARTED' && finishTime.m > 0 && $style.anim]">
 					<div :class="$style.dot" />
 					<div :class="$style.dot" />
 					<div :class="$style.dot" />
@@ -57,17 +57,17 @@ const finishTimeText = computed(() => {
 
 				<div :class="$style.side">
 					<Icon
-						:name="event.status == 'STARTED' ? 'bolt' : 'flag'"
+						:name="event.status == 'MEASUREMENT_STARTED' ? 'bolt' : 'flag'"
 						size="12"
-						:class="[event.status == 'STARTED' && $style.active]"
+						:class="[event.status == 'MEASUREMENT_STARTED' && $style.active]"
 					/>
 
 					<div v-if="event.status == 'NEW'" :class="$style.price">TBD</div>
-					<div v-else-if="event.status == 'STARTED'" :class="$style.price">
+					<div v-else-if="event.status == 'MEASUREMENT_STARTED'" :class="$style.price">
 						{{ price.integer }}<span>.{{ price.fraction?.slice(0, price.integer < 10 ? 4 : 2) }}</span>
 					</div>
-					<div v-else-if="event.status == 'FINISHED'" :class="$style.price">
-						{{ disaggregate(event.closedRate * 100)[0] }}.<span>{{ disaggregate(event.closedRate * 100)[1] }}</span>
+					<div v-else-if="event.status == 'CLOSED'" :class="$style.price">
+						{{ disaggregate(event.closedRate)[0] }}.<span>{{ disaggregate(event.closedRate)[1] }}</span>
 					</div>
 				</div>
 			</div>
@@ -75,11 +75,11 @@ const finishTimeText = computed(() => {
 			<div :class="$style.labels">
 				<div :class="$style.label">Start price</div>
 
-				<span v-if="event.status == 'STARTED' && finishTime.m > 0">{{ finishTimeText }}</span>
-				<span v-if="event.status == 'STARTED' && finishTime.m <= 0">Ending</span>
+				<span v-if="event.status == 'MEASUREMENT_STARTED' && finishTime.m > 0">{{ finishTimeText }}</span>
+				<span v-if="event.status == 'MEASUREMENT_STARTED' && finishTime.m <= 0">Ending</span>
 
-				<div v-if="['STARTED', 'NEW'].includes(event.status)" :class="$style.label">Current price</div>
-				<div v-else-if="event.status == 'FINISHED'" :class="$style.label">Closed price</div>
+				<div v-if="['MEASUREMENT_STARTED', 'NEW'].includes(event.status)" :class="$style.label">Current price</div>
+				<div v-else-if="event.status == 'CLOSED'" :class="$style.label">Closed price</div>
 			</div>
 		</Flex>
 	</Flex>

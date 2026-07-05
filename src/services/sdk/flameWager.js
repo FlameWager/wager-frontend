@@ -8,7 +8,7 @@
  */
 import { computed, reactive, markRaw } from "vue"
 import { ethers } from "ethers"
-import { switchChain } from "@wagmi/core"
+import { switchChain, getAccount } from "@wagmi/core"
 import { createClient } from "@urql/vue"
 import {
   cacheExchange,
@@ -16,7 +16,8 @@ import {
   subscriptionExchange,
 } from "@urql/core"
 import { createClient as createWSClient } from 'graphql-ws';
-import { activeRpcNode, NETWORK_TYPE, activeChainConfig, dipdup, contracts } from "@config"
+import { print } from 'graphql';
+import { config, activeRpcNode, NETWORK_TYPE, activeChainConfig, dipdup, contracts } from "@config"
 
 /**
  * Services.Constants
@@ -28,6 +29,9 @@ import { Networks } from "@/services/constants/networks"
  */
 import wagerABI from "@/contracts/abis/wager.json"
 import poolABI from "@/contracts/abis/pool.json"
+import erc20ABI from "@/contracts/abis/erc20.json"
+
+import { Pool } from "./instruments/pool"
 
 /**
  * Store
@@ -36,6 +40,7 @@ const flameWager = reactive({
   provider: null,
   signer: null,
   core: null,
+  xtz: null,
   pools: {},
   address: null,
   network: NETWORK_TYPE,
@@ -72,6 +77,13 @@ const init = () => {
     flameWager.signer
   ))
 
+  const xtzAddress = import.meta.env.VITE_XTZ_ADDRESS || "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503"
+  flameWager.xtz = markRaw(new ethers.Contract(
+    xtzAddress,
+    erc20ABI,
+    flameWager.signer
+  ))
+
   if (!graphqlConfig) {
     console.warn("GraphQL configuration not found for network:", networkKey)
     return
@@ -88,10 +100,32 @@ const init = () => {
         cacheExchange,
         subscriptionExchange({
           forwardSubscription: (request) => {
-            const input = { ...request, query: request.query || '' }
+            const query = typeof request.query === 'string' ? request.query : print(request.query)
+            const input = { query, variables: request.variables }
             return {
               subscribe: (sink) => {
-                const unsubscribe = wsClient.subscribe(input, sink)
+                const isFunction = typeof sink === 'function';
+                const safeSink = {
+                  next: (val) => {
+                    if (isFunction) sink(val);
+                    else if (sink && typeof sink.next === 'function') sink.next(val);
+                  },
+                  error: (err) => {
+                    console.error("GraphQL Subscription error:", err);
+                    if (!isFunction && sink && typeof sink.error === 'function') {
+                      try {
+                        const cleanError = err instanceof Error ? err : new Error(err?.message || JSON.stringify(err) || "Subscription error");
+                        sink.error(cleanError);
+                      } catch (e) {
+                        console.error("Failed to propagate subscription error to sink:", e);
+                      }
+                    }
+                  },
+                  complete: () => {
+                    if (!isFunction && sink && typeof sink.complete === 'function') sink.complete();
+                  }
+                };
+                const unsubscribe = wsClient.subscribe(input, safeSink)
                 return { unsubscribe }
               },
             }
@@ -133,11 +167,12 @@ const initPools = (pools) => {
   // }
 
   pools.forEach(pool => {
-    flameWager.pools[pool.address] = markRaw(new ethers.Contract(
+    const contract = new ethers.Contract(
       pool.address,
       poolABI,
-      flameWager.signer
-    ))
+      flameWager.signer || flameWager.provider
+    )
+    flameWager.pools[pool.address] = markRaw(new Pool(pool.address, contract, flameWager.gql))
   })
 }
 
@@ -171,13 +206,24 @@ const initWithSigner = async (signer, address) => {
       ))
     }
 
-    if (addresses.pool) {
-      flameWager.pools[addresses.pool] = markRaw(new ethers.Contract(
-        addresses.pool,
+    // Re-initialize all loaded pools with the new signer
+    Object.keys(flameWager.pools).forEach(poolAddress => {
+      const contract = new ethers.Contract(
+        poolAddress,
         poolABI,
         flameWager.signer
-      ))
-    }
+      )
+      // We can reuse the existing Pool instance if we want, or create a new one.
+      // Since Pool holds the contract reference, it's safer to create a new one to ensure state is clean.
+      flameWager.pools[poolAddress] = markRaw(new Pool(poolAddress, contract, flameWager.gql))
+    })
+
+    const xtzAddress = import.meta.env.VITE_XTZ_ADDRESS || "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503"
+    flameWager.xtz = markRaw(new ethers.Contract(
+      xtzAddress,
+      erc20ABI,
+      flameWager.signer
+    ))
 
     console.log("✅ FlameWager SDK contracts connected to signer:", address)
   } catch (error) {
@@ -233,6 +279,16 @@ const destroySubscription = (sub) => {
 }
 
 /**
+ * Approve XTZ for betting/liquidity
+ * @param {string} spenderAddress - The contract address to approve
+ * @param {BigInt|string} amount - The amount to approve
+ */
+const approveXTZ = async (spenderAddress, amount) => {
+  // Native XTZ does not require ERC20 approvals, return true immediately.
+  return true;
+}
+
+/**
  * Place a bet on an event
  * @param {number} eventId - The event ID
  * @param {string} betType - "aboveEq" or "below"
@@ -261,6 +317,18 @@ const placeBet = async (eventId, betType, amount, minWinAmount) => {
 // Initialize GraphQL client on load
 init()
 
+/**
+ * Retrieve the active account using Wagmi Core
+ * @returns {Promise<{address: string}|null>}
+ */
+const getActiveAccount = async () => {
+  const account = getAccount(config)
+  if (account && account.isConnected && account.address) {
+    return { address: account.address }
+  }
+  return null
+}
+
 export {
   flameWager,
   currentNetwork,
@@ -268,6 +336,8 @@ export {
   initPools,
   destroySubscription,
   getContractAddresses,
+  approveXTZ,
   placeBet,
   initWithSigner,
+  getActiveAccount,
 }

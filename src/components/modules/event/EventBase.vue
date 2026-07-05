@@ -56,7 +56,7 @@ import { fetchEventById, fetchEventParticipants, subscribeToEvent, subscribeToUs
  */
 import { numberWithSymbol } from "@utils/amounts"
 import { capitalizeFirstLetter, toClipboard } from "@utils/misc"
-import { flameWager, analytics, currentNetwork } from "@sdk"
+import { flameWager, analytics, currentNetwork, withdraw } from "@sdk"
 import { supportedMarkets, verifiedMakers } from "@config"
 
 /**
@@ -146,8 +146,8 @@ const getEvent = async () => {
 
 const hasWonBet = computed(() => {
 	if (!event.value) return
-
-	return !!event.value.bets.filter((bet) => bet.userId == accountStore.pkh).filter((bet) => bet.side == event.value.winnerBets).length
+	
+	return !!event.value.bets.filter((bet) => bet.user.address.toLowerCase() == accountStore.pkh.toLowerCase()).filter((bet) => bet.betType == event.value.winnerBets).length
 })
 const positionForWithdraw = computed(() => {
 	return accountStore.wonPositions.find((position) => position.event.id == event.value.id)
@@ -193,7 +193,7 @@ const filteredDeposits = computed(() => {
 	if (filters.liquidity == "all") {
 		return event.value.deposits
 	} else {
-		return event.value.deposits.filter((deposit) => deposit.userId == accountStore.pkh)
+		return event.value.deposits.filter((deposit) => deposit.userId == accountStore.pkh.toLowerCase())
 	}
 })
 const filteredBets = computed(() => {
@@ -202,13 +202,13 @@ const filteredBets = computed(() => {
 	if (filters.bets == "all") {
 		return event.value.bets
 	} else {
-		return event.value.bets.filter((bet) => bet.userId == accountStore.pkh)
+		return event.value.bets.filter((bet) => bet.user.address == accountStore.pkh.toLowerCase())
 	}
 })
 
 /** for personal stats */
-const userDeposits = computed(() => event.value.deposits.filter((deposit) => deposit.userId == accountStore.pkh))
-const userBets = computed(() => event.value.bets.filter((bet) => bet.userId == accountStore.pkh))
+const userDeposits = computed(() => event.value.deposits.filter((deposit) => deposit.userId == accountStore.pkh.toLowerCase()))
+const userBets = computed(() => event.value.bets.filter((bet) => bet.user.address == accountStore.pkh.toLowerCase()))
 
 const wonText = computed(() => {
 	if (userBets.value.every((bet) => bet.side == event.value.winnerBets)) {
@@ -299,15 +299,25 @@ const handleWithdraw = () => {
 
 	analytics.log("clickWithdraw", { where: "event_base" })
 
-	juster.sdk
-		.withdraw(event.value.id, accountStore.pkh)
-		.then((op) => {
+	withdraw(event.value.id)
+		.then((tx) => {
 			/** Pending transaction label */
 			accountStore.pendingTransaction.awaiting = true
 
-			op.confirmation()
-				.then((result) => {
+			tx.wait()
+				.then((receipt) => {
 					accountStore.pendingTransaction.awaiting = false
+					
+					notificationsStore.create({
+						notification: {
+							type: "success",
+							title: "Withdrawal successful",
+							description: "Your funds have been transferred to your wallet",
+							autoDestroy: true,
+						},
+					})
+
+					updateWithdrawals()
 					isWithdrawing.value = false
 
 					/** rm won position from store */
@@ -316,10 +326,6 @@ const handleWithdraw = () => {
 					)
 
 					updateWithdrawals()
-
-					if (!result.completed) {
-						// todo: handle it?
-					}
 				})
 				.catch(() => {
 					accountStore.pendingTransaction.awaiting = false
@@ -377,7 +383,7 @@ const copy = (target) => {
 				autoDestroy: true,
 				badges: [
 					{
-						secondaryText: `app.juster.fi${location.pathname}`,
+						secondaryText: `app.flameWager.fi${location.pathname}`,
 						icon: "copy",
 					},
 				],
@@ -682,8 +688,8 @@ onUnmounted(() => {
 								<Text size="12" color="support" weight="700" :class="$style.column">
 									{{
 										(event.status == "CANCELED" && "REFUND") ||
-										(["NEW", "STARTED"].includes(event.status) && "POTENTIAL") ||
-										(event.status == "FINISHED" && "PAYOUT")
+										(["NEW", "MEASUREMENT_STARTED"].includes(event.status) && "POTENTIAL") ||
+										(["CLOSED", "CANCELLED"].includes(event.status) && "PAYOUT")
 									}}
 								</Text>
 							</Flex>

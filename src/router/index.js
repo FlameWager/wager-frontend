@@ -41,44 +41,76 @@ const routes = [
   //   component: MyBets
   // }
   {
-		path: "/markets/:id",
-		name: "Market",
-		component: () => import("@views/MarketPage.vue"),
-	},
+    path: "/markets/:id",
+    name: "Market",
+    component: () => import("@views/MarketPage.vue"),
+  },
+  {
+    path: "/rating",
+    name: "Rating",
+    alias: "/rank",
+    component: () => import("@views/LeaderboardPage.vue"),
+  },
   {
     path: "/markets",
     name: "Markets",
     component: () => import("@views/MarketsPage.vue"),
   },
   {
-		path: "/withdrawals",
-		name: "Withdrawals",
+		path: "/profile",
+		name: "MyProfile",
 		beforeEnter: (to, from, next) => {
 			const accountStore = useAccountStore()
+
+			if (to.params.address) {
+				next()
+				return
+			}
+
 			if (accountStore.isLoggined) {
 				next()
 			} else {
 				next({ name: "Explore" })
 			}
 		},
-		component: () => import("@views/WithdrawalsPage.vue"),
+		component: () => import("@views/ProfilePage.vue"),
+		children: [
+			{
+				path: ":address",
+				name: "Profile",
+				component: () => import("@views/ProfilePage.vue"),
+			},
+		],
 	},
+  {
+    path: "/withdrawals",
+    name: "Withdrawals",
+    beforeEnter: (to, from, next) => {
+      const accountStore = useAccountStore()
+      if (accountStore.isLoggined) {
+        next()
+      } else {
+        next({ name: "Explore" })
+      }
+    },
+    component: () => import("@views/WithdrawalsPage.vue"),
+  },
 ]
 
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
-	routes,
-	scrollBehavior() {
-		return { top: 0 }
-	},
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
 router.beforeEach((target, prev, next) => {
-	const appStore = useAppStore()
+  const appStore = useAppStore()
 
-	if (prev.name) appStore.prevRoute = prev
+  if (prev.name) appStore.prevRoute = prev
 
-	next()
+  next()
 })
 
 export default router 

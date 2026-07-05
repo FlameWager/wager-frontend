@@ -51,7 +51,7 @@ onMounted(async () => {
 						<Icon name="discord" size="16" />Discord Server
 					</Button>
 				</a> -->
-				<a href="https://x.com/wagerEtherlink" target="_blank">
+				<a href="https://x.com/wagerAMM" target="_blank">
 					<Button type="secondary" size="small">
 						<Icon name="twitter" size="16" />TwitXter
 					</Button>

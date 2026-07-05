@@ -2,11 +2,17 @@
 import { ref, reactive, onMounted, onBeforeUnmount, useCssModule, computed, nextTick } from "vue"
 import * as d3 from "d3"
 import { DateTime } from "luxon"
+import { pipe, subscribe } from "wonka"
 
 /**
  * API
  */
 import { fetchQuoteByRange } from "@/api/quotes"
+
+/**
+ * GraphQL
+ */
+import { QUOTES_SUBSCRIPTION } from "@/graphql/quotes"
 
 /**
  * Services
@@ -466,7 +472,7 @@ onMounted(async () => {
 			minute: chartEars.minute,
 		}),
 	)
-
+	
 	symbol.isQuotesLoaded = true
 
 	nextTick(() => {
@@ -474,50 +480,38 @@ onMounted(async () => {
 	})
 
 	if (props.event.status !== "FINISHED") {
-		subscription.value = await juster.gql
-			.subscription({
-				quotesWma: [
-					{
-						where: {
-							currencyPairId: {
-								_eq: props.event.currencyPair.id,
-							},
-						},
-						order_by: { timestamp: "desc" },
-						limit: 1,
-					},
-					{
-						currencyPairId: true,
-						price: true,
-						timestamp: true,
-					},
-				],
-			})
-			.subscribe({
-				next: (data) => {
-					const newQuote = data.quotesWma[0]
+		const { unsubscribe } = pipe(
+			juster.gql.subscription(QUOTES_SUBSCRIPTION, { currencyPairId: props.event.currencyPair.id }),
+			subscribe((result) => {
+				if (result.error) {
+					console.error("Chart quote subscription error:", result.error)
+					return
+				}
 
-					if (
+				const newQuote = result.data?.quotesWma?.[0]
+				if (!newQuote) return
+
+				if (
+					DateTime.fromISO(props.event.betsCloseTime).plus({
+						second: props.event.measurePeriod,
+					}).ts == DateTime.fromISO(newQuote.timestamp).ts ||
+					DateTime.fromISO(newQuote.timestamp).ts >
 						DateTime.fromISO(props.event.betsCloseTime).plus({
 							second: props.event.measurePeriod,
-						}).ts == DateTime.fromISO(newQuote.timestamp).ts ||
-						DateTime.fromISO(newQuote.timestamp).ts >
-							DateTime.fromISO(props.event.betsCloseTime).plus({
-								second: props.event.measurePeriod,
-							}).ts
-					) {
-						subscription.value.unsubscribe()
-						return
-					}
+						}).ts
+				) {
+					unsubscribe()
+					return
+				}
 
-					if (!symbol.quotes.some((quote) => quote.timestamp == newQuote.timestamp) && symbol.quotes.length) {
-						symbol.quotes.unshift(newQuote)
-
-						draw()
-					}
-				},
-				error: console.error,
+				if (!symbol.quotes.some((quote) => quote.timestamp == newQuote.timestamp) && symbol.quotes.length) {
+					symbol.quotes.unshift(newQuote)
+					draw()
+				}
 			})
+		)
+		// Store unsubscribe for cleanup
+		subscription.value = { unsubscribe, closed: false, _state: 'open' }
 	}
 })
 onBeforeUnmount(() => {
@@ -527,6 +521,7 @@ onBeforeUnmount(() => {
 
 	d3.select(`#price_chart > *`).remove()
 })
+
 </script>
 
 <template>
@@ -583,7 +578,7 @@ onBeforeUnmount(() => {
 								:style="{ transform: `rotate(${priceDynamics.diff < 0 && '180deg'})` }"
 							/>
 							<Text size="11" weight="600" :color="priceDynamics.diff < 0 ? 'red' : 'green'">
-								{{ priceDynamics.percent.toFixed(2) }}%
+								{{ Number(priceDynamics.percent).toFixed(2) }}%
 							</Text>
 						</Flex>
 						<Text v-else size="11" weight="600" color="tertiary">

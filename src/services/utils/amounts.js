@@ -3,9 +3,10 @@ export const formatQuote = (amount) => {
 }
 
 export const numberWithSymbol = (target, symbol) => {
-	if (!target) return 0
+	if (target === undefined || target === null) return "0"
 
 	let num = parseFloat(target)
+	if (isNaN(num)) return "0"
 
 	if (num % 1 === 0) {
 		num = num.toFixed(0)
@@ -86,12 +87,17 @@ export const crop = (num, p = 6) => {
 }
 
 export const truncate = (num) => {
-	if (!num) return num
+	if (num === undefined || num === null) return "0"
 
 	/** todo: refactor */
-	if (num.toString().includes("e")) return 0
+	const numStr = num.toString()
+	if (numStr.includes("e")) return "0"
 
-	const [left, right] = num.toString().split(".")
+	if (!numStr.includes(".")) return numStr
+
+	const [left, right] = numStr.split(".")
+	if (!right) return left
+
 	let result = ""
 	const rightArr = right.split("")
 
@@ -109,10 +115,12 @@ export const truncate = (num) => {
 }
 
 export const disaggregate = (num) => {
+	if (num === undefined || num === null) return ["0", "00"]
+
 	const splittedNum = num.toString().split(".")
 
 	const integer = splittedNum[0]
-	const fraction = splittedNum[1].slice(0, integer < 10 ? 4 : 2)
+	const fraction = splittedNum[1] ? splittedNum[1].slice(0, integer < 10 ? 4 : 2) : "00"
 
 	return [numberWithSymbol(integer, ","), fraction]
 }

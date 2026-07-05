@@ -7,9 +7,14 @@ import {
   initWithSigner,
   placeBet,
   getContractAddresses,
+  approveXTZ,
+  getActiveAccount,
 } from "./flameWager"
 import analytics from "./analytics"
 import { withdraw, withdrawAll } from "./withdraw"
+import { getBalance } from "@wagmi/core"
+import { ethers } from "ethers"
+import { config, activeChainConfig } from "@config"
 
 /**
  * Utility function to fetch balance for a given address
@@ -17,9 +22,6 @@ import { withdraw, withdrawAll } from "./withdraw"
  * @returns {Promise<string>} The balance in ETH as a string
  */
 export async function fetchBalance(address) {
-  const { getBalance } = await import("@wagmi/core")
-  const { ethers } = await import("ethers")
-  const { config, activeChainConfig } = await import("@config")
 
   if (!address) return "0"
 
@@ -43,9 +45,11 @@ export {
   initPools,
   destroySubscription,
   getContractAddresses,
+  approveXTZ,
   placeBet,
   initWithSigner,
   analytics,
   withdraw,
-  withdrawAll
+  withdrawAll,
+  getActiveAccount,
 }

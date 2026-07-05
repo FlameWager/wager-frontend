@@ -238,8 +238,8 @@ const distributionOfBets = computed(() => {
 				<div :class="$style.text">
 					<p>The stakes are 50/50</p>
 					<p>
-						For rise {{ distributionOfBets[0].toFixed(2) }} ꜩ and
-						{{ distributionOfBets[1].toFixed(2) }} ꜩ for fall
+						For rise {{ distributionOfBets[0].toFixed(2) }} XTZ and
+						{{ distributionOfBets[1].toFixed(2) }} XTZ for fall
 					</p>
 				</div>
 			</div>
@@ -263,8 +263,8 @@ const distributionOfBets = computed(() => {
 						side
 					</p>
 					<p>
-						For rise {{ distributionOfBets[0].toFixed(2) }} ꜩ and
-						{{ distributionOfBets[1].toFixed(2) }} ꜩ for fall
+						For rise {{ distributionOfBets[0].toFixed(2) }} XTZ and
+						{{ distributionOfBets[1].toFixed(2) }} XTZ for fall
 					</p>
 				</div>
 			</div>
