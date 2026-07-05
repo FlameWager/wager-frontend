@@ -117,7 +117,7 @@ export const sanity = {
 export const verifiedMakers = {
   testnet: [
     "0x6f8c8eb1d40cd2b9918334e7e82db9bc9df4e8b8",
-    "0x57e32313C244c7068aa5231C867e27caD4a62635",
+    "0x669db50aca49ffe37e74615e1f99ea072ecc187b",
   ],
   mainnet: [
     "0x6f8c8eb1d40cd2b9918334e7e82db9bc9df4e8b8",
@@ -126,8 +126,8 @@ export const verifiedMakers = {
 
 export const contracts = {
   testnet: {
-    oracle: "0x602af77b8e7b5f97b0b6648dcfaa50c95a7ec3ea",
-    wager: "0xdE4ce3A932bb72459d8F355aB2272227bE3B31dC",
-    pool: "0x57e32313C244c7068aa5231C867e27caD4a62635",
+    oracle: "0x49cff589a45e90ae47d2ba6a5d2515879f347392",
+    wager: "0x0f41b0967d01d1f0a92f0fc0728a5b9a7968eb78",
+    pool: "0x669db50aca49ffe37e74615e1f99ea072ecc187b",
   },
 }
