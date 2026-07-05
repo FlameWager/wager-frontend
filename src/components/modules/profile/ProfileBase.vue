@@ -272,7 +272,7 @@ export default defineComponent({
 
 				<div :class="$style.additional">
 					<div :class="$style.left">
-						<a :href="`https://explorer.test.mezo.org/address/${address}`" target="_blank">
+						<a :href="`https://shadownet.explorer.etherlink.com/address/${address}`" target="_blank">
 							<Button type="secondary" size="small">
 								<Icon name="database" size="14" />
 								View on Explorer

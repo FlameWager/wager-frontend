@@ -49,18 +49,18 @@ import { useMarketStore } from "@store/market"
 
 const defaultFilters = {
 	symbols: [
-		// {
-		// 	name: "MEZO-USD",
-		// 	active: true,
-		// },
+		{
+			name: "XTZ-USD",
+			active: true,
+		},
 		{
 			name: "BTC-USD",
 			active: true,
 		},
-		// {
-		// 	name: "ETH-USD",
-		// 	active: true,
-		// },
+		{
+			name: "ETH-USD",
+			active: true,
+		},
 	],
 
 	periods: [

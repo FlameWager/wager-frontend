@@ -165,7 +165,7 @@ const copy = (target) => {
 				autoDestroy: true,
 				badges: [
 					{
-						secondaryText: `explorer.test.mezo.org/${shorten(props.pool.address)}`,
+						secondaryText: `shadownet.explorer.etherlink.com/${shorten(props.pool.address)}`,
 						icon: "explorer",
 					},
 				],
@@ -173,13 +173,13 @@ const copy = (target) => {
 				actions: [
 					{
 						name: "Open in new tab",
-						callback: () => window.open(`https://explorer.test.mezo.org/address/${props.pool.address}`, "_blank"),
+						callback: () => window.open(`https://shadownet.explorer.etherlink.com/address/${props.pool.address}`, "_blank"),
 					},
 				],
 			},
 		})
 
-		toClipboard(`https://explorer.test.mezo.org/address/${props.pool.address}`)
+		toClipboard(`https://shadownet.explorer.etherlink.com/address/${props.pool.address}`)
 	}
 }
 </script>

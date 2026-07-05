@@ -155,7 +155,7 @@ const handleCopy = (target) => {
 				<DropdownDivider />
 
 				<a
-					:href="`https://explorer.test.mezo.org/address/${user.userId}`"
+					:href="`https://shadownet.explorer.etherlink.com/address/${user.userId}`"
 					target="_blank"
 				>
 					<DropdownItem>

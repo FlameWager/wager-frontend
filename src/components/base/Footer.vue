@@ -242,8 +242,8 @@ onBeforeUnmount(() => {
 						<Text size="11" color="support">✦</Text>
 						<Text size="14" weight="500" color="secondary"> &nbsp;&nbsp;Wager&nbsp; </Text>
 						<Text size="14" weight="500" color="tertiary"> Market data provided by&nbsp; </Text>
-						<a href="https://explorer.test.mezo.org/address/0xE7168A7f93208c18d74774692cB8014FEA345129?tab=txs" target="_blank">
-							<Text size="14" weight="500" color="secondary"> Pyth Oracle </Text>
+						<a href="https://shadownet.explorer.etherlink.com/address/0x49cff589a45e90ae47d2ba6a5d2515879f347392" target="_blank">
+							<Text size="14" weight="500" color="secondary"> Price Oracle </Text>
 						</a>
 					</Flex>
 
