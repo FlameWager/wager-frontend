@@ -242,7 +242,7 @@ export default defineComponent({
 			<div>
 				<h1>Leaderboard</h1>
 				<div :class="$style.description">
-					Real-time rankings of top performing bet makers and liquidity pool depositors on Mezo.
+					Real-time rankings of top performing bet makers and liquidity pool depositors on Etherlink.
 				</div>
 			</div>
 

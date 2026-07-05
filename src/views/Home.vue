@@ -3,7 +3,7 @@
     <div class="content">
       <h1>Wager</h1>
       <p class="description">
-        A platform allowing users to take part in an automated betting market by creating events, providing liquidity to them, and making bets on Mezo. 
+        A platform allowing users to take part in an automated betting market by creating events, providing liquidity to them, and making bets on Etherlink. 
       </p>
       <router-link to="/events" class="cta-button">
         <Icon name="compass" size="20" />
