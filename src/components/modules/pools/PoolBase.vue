@@ -413,15 +413,15 @@ const setupSubToLines = async () => {
 	const queryStr = `
 		query GetLines($poolAddress: String!) {
 			poolLine(where: { poolId: { _eq: $poolAddress } }) {
-				id
-				acceptTime
-				amount
+				poolLineId
+				lineId
 				poolId
-				status
-				pool {
-					entryLockPeriod
-					address
+				currencyPair {
+					symbol
 				}
+				measurePeriod
+				maxEvents
+				isPaused
 			}
 		}
 	`
@@ -438,15 +438,15 @@ const setupSubToLines = async () => {
 	const subQuery = `
 		subscription WatchLines($poolAddress: String!) {
 			poolLine(where: { poolId: { _eq: $poolAddress } }) {
-				id
-				acceptTime
-				amount
+				poolLineId
+				lineId
 				poolId
-				status
-				pool {
-					entryLockPeriod
-					address
+				currencyPair {
+					symbol
 				}
+				measurePeriod
+				maxEvents
+				isPaused
 			}
 		}
 	`

@@ -3,7 +3,7 @@
  * Vendor
  */
 import { ref, reactive, watch, computed, nextTick } from "vue"
-import BN from "bignumber.js"
+import { ethers } from "ethers"
 
 /**
  * UI
@@ -47,18 +47,20 @@ const amount = reactive({ value: 0, error: "" })
 const isPoolHovered = ref(false)
 
 const opConfirmationInProgress = ref(false)
-const handleDeposit = async () => {
+const handleWithdraw = async () => {
 	if (buttonState.disabled) return
 
 	opConfirmationInProgress.value = true
 
 	try {
-		const op = await juster.pools[
-			props.selectedPool.address
-		].claimLiquidity(accountStore.pkh, BN(amount.value))
+		// EVM JusterPool has no delayed claimLiquidity entrypoint. LP shares are
+		// burned and paid by withdraw(shares) when the Pool has sufficient free
+		// liquidity; the amount entered in the UI is human-readable shares.
+		const shares = ethers.parseEther(String(amount.value))
+		const op = await juster.pools[props.selectedPool.address].withdraw(shares)
 
 		accountStore.pendingTransaction.awaiting = true
-		op.confirmation()
+		op.wait()
 			.then(() => {
 				accountStore.pendingTransaction.awaiting = false
 			})
@@ -69,14 +71,14 @@ const handleDeposit = async () => {
 		notificationsStore.create({
 			notification: {
 				type: "success",
-				title: "Your request has been accepted",
+				 title: "Withdrawal submitted",
 				description:
-					"We need to process your request, it will take ~30 seconds",
+					"Your withdrawal will complete once the transaction is confirmed",
 				autoDestroy: true,
 			},
 		})
 
-		analytics.log("onPoolDeposit", {
+		analytics.log("onPoolWithdraw", {
 			pool: props.selectedPool.address,
 		})
 
@@ -137,7 +139,7 @@ const buttonState = computed(() => {
 		}
 
 	return {
-		text: `Request ${amount.value.toFixed(2)} shares to withdraw`,
+		text: `Withdraw ${amount.value.toFixed(2)} shares`,
 		disabled: false,
 		type: "secondary",
 	}
@@ -196,7 +198,7 @@ const handleCloseRequestFundsWarning = () => {
 					color="primary"
 					:class="$style.head_btn"
 				>
-					Request Withdrawal
+					Withdraw Liquidity
 				</Text>
 			</Flex>
 
@@ -215,12 +217,10 @@ const handleCloseRequestFundsWarning = () => {
 				@onClose="handleCloseRequestFundsWarning"
 			>
 				<span>
-					This is a withdrawal request (not the withdrawal to the
-					wallet itself).
+					This Pool processes withdrawals directly to your wallet.
 				</span>
-				It is necessary to wait until the completion of events where
-				your funds are used and then they will be ready for the full
-				withdrawal.
+				The request succeeds when the Pool has enough free liquidity;
+				otherwise wait for active events to settle.
 			</Block>
 
 			<Flex direction="column" gap="8">
@@ -393,7 +393,7 @@ const handleCloseRequestFundsWarning = () => {
 
 			<Flex direction="column" gap="12" align="center">
 				<Button
-					@click="handleDeposit"
+					@click="handleWithdraw"
 					:type="buttonState.type"
 					:disabled="buttonState.disabled"
 					:loading="opConfirmationInProgress"
@@ -415,9 +415,9 @@ const handleCloseRequestFundsWarning = () => {
 					height="16"
 					style="max-width: 400px"
 				>
-					The requested funds are still being used in events. Let's
-					wait until they are finished and be ready for the full
-					withdrawal
+					Withdrawals are immediate when sufficient Pool liquidity is
+					free. If funds are locked in active events, try again after
+					they settle.
 				</Text>
 			</Flex>
 		</Flex>

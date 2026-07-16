@@ -20,6 +20,7 @@ import Spin from "@ui/Spin.vue"
  */
 import { parsePoolName, shorten } from "@utils/misc"
 import { flameWager as juster, destroySubscription } from "@sdk"
+import { executeQuery } from "@/api/graphql"
 
 /**
  * Models
@@ -37,6 +38,7 @@ const router = useRouter()
 
 const subscription = ref({})
 const events = ref([])
+const isLoading = ref(false)
 
 const searchText = ref("")
 const eventsSearcher = ref({})
@@ -84,29 +86,34 @@ watch(
 	() => props.show,
 	async () => {
 		if (props.show) {
-			subscription.value = await juster.gql
-				.subscription({
-					poolState: [
-						{
-							where: {
-								poolId: {
-									_eq: props.pool.address,
-								},
-							},
-							limit: 12,
-							order_by: {
-								counter: "desc",
-							},
-						},
-						poolStateModel,
-					],
-				})
-				.subscribe({
-					next: ({ poolState }) => {
-						events.value = poolState
-					},
-					error: console.error,
-				})
+			isLoading.value = true
+			const query = `
+				query PoolTimeline($poolAddress: String!) {
+					poolEvent(where: { poolId: { _eq: $poolAddress } }, order_by: { id: desc }, limit: 12) {
+						result
+						event { id createdTime betsCloseTime }
+					}
+				}
+			`
+			const toTimelineEvents = (poolEvents) => poolEvents
+				.filter((poolEvent) => poolEvent.event)
+				.map((poolEvent) => ({
+					action: poolEvent.result === null ? "EVENT_CREATED" : "EVENT_FINISHED",
+					timestamp: poolEvent.event.createdTime || poolEvent.event.betsCloseTime,
+					affectedEventId: poolEvent.event.id,
+				}))
+			try {
+				const data = await executeQuery(query, { poolAddress: props.pool.address.toLowerCase() })
+				events.value = toTimelineEvents(data?.poolEvent || [])
+			} catch (error) {
+				console.error("Error fetching Pool timeline:", error)
+			} finally {
+				isLoading.value = false
+			}
+			subscription.value = juster.gql.subscription(query, { poolAddress: props.pool.address.toLowerCase() }).subscribe({
+				next: (result) => { events.value = toTimelineEvents(result.data?.poolEvent || []) },
+				error: console.error,
+			})
 		} else {
 			destroySubscription(subscription.value)
 			clearInterval(labelInterval.value)
@@ -199,9 +206,9 @@ const getEventIconByActionName = (action) => {
 						</Flex>
 					</Flex>
 					<Flex v-else align="center" gap="16">
-						<Text size="13" weight="500" color="tertiary" align="right" :class="$style.when">Fetching</Text>
+						<Text size="13" weight="500" color="tertiary" align="right" :class="$style.when">{{ isLoading ? "Fetching" : "No activity yet" }}</Text>
 
-						<Flex align="center" gap="8">
+						<Flex v-if="isLoading" align="center" gap="8">
 							<Spin size="14" />
 
 							<Text size="14" weight="500" color="tertiary"></Text>

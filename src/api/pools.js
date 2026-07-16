@@ -15,6 +15,9 @@ export const fetchAllPools = async () => {
     const data = await executeQuery(ALL_POOLS_QUERY)
     return (data?.pool || []).map((pool) => ({
       ...pool,
+      // Pool name is not emitted by the EVM deployment event. Keep the
+      // shared-market Pool identifiable while the indexer is catching up.
+      name: pool.name || "Mammoth Markets Pool",
       poolLines: (pool.poolLines || []).map(normalizeLine),
     }))
   } catch (error) {
