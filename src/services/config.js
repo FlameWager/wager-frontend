@@ -116,7 +116,7 @@ export const sanity = {
 
 export const verifiedMakers = {
   testnet: [
-    "0x327292fE3A8C8B9C4aE65FD67f742B10C4E61A55",
+    "0x327292fe3a8c8b9c4ae65fd67f742b10c4e61a55",
     "0x669db50aca49ffe37e74615e1f99ea072ecc187b",
   ],
   mainnet: [
