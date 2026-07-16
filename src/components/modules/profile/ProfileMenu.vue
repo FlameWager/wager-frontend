@@ -106,13 +106,14 @@ const handleLogout = () => {
 
 						<Flex direction="column" gap="4">
 							<Text size="13" weight="600" color="primary">
-								<Flex gap="4">
-									{{ numberWithSymbol(accountStore.balance, ",") }}
-									<Text color="tertiary">XTZ</Text>
+								<Flex direction="column" gap="8">
+									<Text size="13" weight="600" color="primary">
+										My Balance
+									</Text>
+									<Text size="11" weight="600" color="tertiary">
+										{{ numberWithSymbol(accountStore.balance, ",") }} XTZ
+									</Text>
 								</Flex>
-							</Text>
-							<Text size="11" weight="600" color="tertiary">
-								{{ accountStore.btcBalance }} BTC
 							</Text>
 						</Flex>
 					</Flex>

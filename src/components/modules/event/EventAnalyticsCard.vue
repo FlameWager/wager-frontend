@@ -68,13 +68,16 @@ onMounted(async () => {
 		tsLt: prevDt.toJSDate(),
 	})
 
-	const avgRaqQuotePrice =
-		rawQuotes.reduce((acc, curr) => (acc += curr.price), 0) /
-		rawQuotes.length
+	const numericQuotes = rawQuotes
+		.map((quote) => Number(quote.price))
+		.filter((price) => Number.isFinite(price) && price > 0)
+	const avgRawQuotePrice = numericQuotes.length
+		? numericQuotes.reduce((sum, price) => sum + price, 0) / numericQuotes.length
+		: 0
 
 	prevQuotePrice.value = targetedRawQuote
-		? targetedRawQuote.price
-		: avgRaqQuotePrice
+		? Number(targetedRawQuote.price)
+		: avgRawQuotePrice
 
 	/** Last Quote (to compare) */
 	if (["STARTED", "FINISHED"].includes(props.event.status)) {
@@ -104,9 +107,12 @@ const priceDetails = computed(() => {
 		}
 	}
 
-	const priceToCompare = ["STARTED", "FINISHED"].includes(props.event.status)
+	const priceToCompare = Number(["STARTED", "FINISHED"].includes(props.event.status)
 		? startQuote.value.price
-		: quotes.value[0].price
+		: quotes.value[0].price)
+	if (!Number.isFinite(priceToCompare) || !Number.isFinite(prevQuotePrice.value) || prevQuotePrice.value <= 0) {
+		return { state: PriceStates.UNCHANGED, percentageDiff: 0 }
+	}
 
 	return {
 		state:

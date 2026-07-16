@@ -130,6 +130,7 @@ const ratio = computed(() => {
 	const stakeAmount = !isNaN(parseFloat(amount.value)) ? parseFloat(amount.value) : 0
 	const belowAmount = Number(props.event.poolBelow || 0)
 	const aboveAmount = Number(props.event.poolAboveEq || 0)
+	if (aboveAmount === 0 && belowAmount === 0) return { rise: 1, fall: 1 }
 
 	const riseDenominator = aboveAmount + (side.value === "Rise" ? stakeAmount : 0)
 	const fallDenominator = belowAmount + (side.value === "Fall" ? stakeAmount : 0)
@@ -142,6 +143,7 @@ const ratio = computed(() => {
 const ratioBeforeBet = computed(() => {
 	const belowAmount = Number(props.event.poolBelow || 0)
 	const aboveAmount = Number(props.event.poolAboveEq || 0)
+	if (aboveAmount === 0 && belowAmount === 0) return { rise: 1, fall: 1 }
 
 	return {
 		rise: belowAmount / (aboveAmount || 1),

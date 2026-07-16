@@ -170,11 +170,9 @@ export default defineComponent({
 				</div>
 
 				<Flex direction="column" align="center" gap="4" :class="$style.status">
+					
 					<Text size="14" weight="600" color="secondary">
 						{{ isMyProfile ? accountStore.balance : balance }} XTZ
-					</Text>
-					<Text v-if="isMyProfile" size="12" weight="600" color="tertiary">
-						{{ accountStore.btcBalance }} BTC
 					</Text>
 				</Flex>
 

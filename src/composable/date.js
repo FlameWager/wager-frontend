@@ -23,7 +23,7 @@ export const useCountdown = (target) => {
 			return { countdownText, status }
 		}
 
-		countdownText.value = `${h < 10 ? `0${h}` : h}:${
+		countdownText.value = `${d ? `${d}d ` : ""}${h < 10 ? `0${h}` : h}:${
 			m < 10 ? `0${m}` : m
 		}:${s < 10 ? `0${s}` : s}`
 
@@ -47,7 +47,7 @@ export const useCountdown = (target) => {
 				countdownText.value = `00:00:00`
 				clearInterval(countdownInterval)
 			} else {
-				countdownText.value = `${h < 10 ? `0${h}` : h}:${
+				countdownText.value = `${d ? `${d}d ` : ""}${h < 10 ? `0${h}` : h}:${
 					m < 10 ? `0${m}` : m
 				}:${s < 10 ? `0${s}` : s}`
 			}
