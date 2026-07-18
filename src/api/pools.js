@@ -17,7 +17,7 @@ export const fetchAllPools = async () => {
       ...pool,
       // Pool name is not emitted by the EVM deployment event. Keep the
       // shared-market Pool identifiable while the indexer is catching up.
-      name: pool.name || "Mammoth Markets Pool",
+      name: pool.name || "Wager Pool",
       poolLines: (pool.poolLines || []).map(normalizeLine),
     }))
   } catch (error) {
