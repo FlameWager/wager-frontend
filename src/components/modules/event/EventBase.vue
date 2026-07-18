@@ -221,15 +221,15 @@ const wonText = computed(() => {
 })
 
 const priceDynamics = computed(() => {
-	const startRate = event.value.startRate * 100
-	const closedRate = event.value.closedRate * 100
+	const startRate = Number(event.value.startRate)
+	const endRate = Number(event.value.status == "FINISHED" ? event.value.closedRate : price.value.rate)
 
-	const percent =
-		event.value.status == "FINISHED"
-			? (100 * Math.abs(closedRate - startRate)) / ((closedRate + startRate) / 2)
-			: (100 * Math.abs(price.value.rate - startRate)) / ((price.value.rate + startRate) / 2)
+	if (!Number.isFinite(startRate) || startRate <= 0 || !Number.isFinite(endRate) || endRate <= 0) {
+		return { diff: 0, percent: 0 }
+	}
 
-	const diff = event.value.status == "FINISHED" ? closedRate - startRate : price.value.rate - startRate
+	const diff = endRate - startRate
+	const percent = (diff / startRate) * 100
 
 	return { diff, percent }
 })
