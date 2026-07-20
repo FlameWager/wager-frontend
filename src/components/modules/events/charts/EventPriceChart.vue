@@ -33,6 +33,7 @@ const classes = useCssModule()
 
 const symbol = reactive({ quotes: [], isQuotesLoaded: false })
 const subscription = ref({})
+const isClosed = computed(() => props.event.status === "CLOSED")
 
 /**
  * Chart
@@ -43,6 +44,14 @@ const scale = reactive({
 })
 const startData = ref([])
 const currentQuote = ref({})
+const displayedPrice = computed(() =>
+	isClosed.value ? Number(props.event.closedRate) : Number(currentQuote.value?.value),
+)
+const displayedTimestamp = computed(() =>
+	isClosed.value
+		? DateTime.fromISO(props.event.betsCloseTime).plus({ seconds: props.event.measurePeriod }).toJSDate()
+		: currentQuote.value?.date,
+)
 
 // const priceDynamics = computed(() => {
 // 	const startRate = props.event.startRate * 100
@@ -157,10 +166,12 @@ const draw = () => {
 		.scaleTime()
 		.domain(d3.extent(eventPeriod, (d) => d.date))
 		.range([0, canvas.node().getBoundingClientRect().width - 130])
-	scale.y = d3
-		.scaleLinear()
-		.domain([d3.min(data, (d) => +d.value), d3.max(data, (d) => +d.value)])
-		.range([height, 10])
+	const priceValues = data.map((quote) => +quote.value)
+	if (isClosed.value && Number.isFinite(Number(props.event.closedRate))) {
+		priceValues.push(Number(props.event.closedRate))
+	}
+
+	scale.y = d3.scaleLinear().domain(d3.extent(priceValues)).range([height, 10])
 
 	/** Price line */
 	startData.value = data.find((d) => new Date(d.date).getTime() == new Date(props.event.betsCloseTime).getTime())
@@ -316,8 +327,8 @@ const draw = () => {
 	if (currentQuote.value) {
 		chart
 			.append("circle")
-			.attr("cx", scale.x(currentQuote.value.date))
-			.attr("cy", scale.y(currentQuote.value.value))
+			.attr("cx", scale.x(displayedTimestamp.value))
+			.attr("cy", scale.y(displayedPrice.value))
 			.attr("r", 2)
 			.attr("fill", "#fff")
 
@@ -326,16 +337,16 @@ const draw = () => {
 			.append("line")
 			.attr("x1", `100%`)
 			.attr("class", classes.current_price_line)
-			.attr("transform", `translate(0, ${scale.y(currentQuote.value.value) + 20})`)
+			.attr("transform", `translate(0, ${scale.y(displayedPrice.value) + 20})`)
 	}
 
 	/** animated circle */
-	if (props.event.status !== "FINISHED" && currentQuote.value) {
+	if (!isClosed.value && currentQuote.value) {
 		chart
 			.append("circle")
 			.attr("id", "animated_circle")
-			.attr("cx", scale.x(currentQuote.value.date))
-			.attr("cy", scale.y(currentQuote.value.value))
+			.attr("cx", scale.x(displayedTimestamp.value))
+			.attr("cy", scale.y(displayedPrice.value))
 			.attr("fill", "rgba(255,255,255,0.07)")
 			.attr("stroke", "rgba(255,255,255, 0.5)")
 			.attr("stroke-width", "2px")
@@ -479,7 +490,7 @@ onMounted(async () => {
 		draw()
 	})
 
-	if (props.event.status !== "FINISHED") {
+	if (!isClosed.value) {
 		const { unsubscribe } = pipe(
 			juster.gql.subscription(QUOTES_SUBSCRIPTION, { currencyPairId: props.event.currencyPair.id }),
 			subscribe((result) => {
@@ -544,20 +555,20 @@ onBeforeUnmount(() => {
 				<!-- Current Price -->
 				<Flex
 					v-if="currentQuote.value"
-					:class="[$style.price_badge, $style.current, event.status === 'FINISHED' && $style.finished]"
+					:class="[$style.price_badge, $style.current, isClosed && $style.finished]"
 					:style="{
-						top: `${scale.y(currentQuote.value) + 20 - 47 / 2}px`,
+						top: `${scale.y(displayedPrice) + 20 - 47 / 2}px`,
 					}"
 					gap="6"
 				>
 					<Icon
-						:name="event.status === 'FINISHED' ? 'flag' : 'bolt'"
+						:name="isClosed ? 'flag' : 'bolt'"
 						size="10"
-						:color="event.status === 'FINISHED' ? 'tertiary' : 'blue'"
+						:color="isClosed ? 'tertiary' : 'blue'"
 					/>
 
 					<Flex direction="column" gap="6" align="end">
-						<Flex v-if="event.status === 'FINISHED'" align="center">
+						<Flex v-if="isClosed" align="center">
 							<Text size="12" weight="600" color="secondary">
 								{{ disaggregate(event.closedRate)[0] }}
 							</Text>
@@ -570,7 +581,7 @@ onBeforeUnmount(() => {
 							<Text size="12" weight="600" color="tertiary"> .{{ disaggregate(currentQuote.value)[1] }} </Text>
 						</Flex>
 
-						<Flex v-if="['STARTED', 'FINISHED'].includes(event.status)" align="center" gap="4">
+						<Flex v-if="['MEASUREMENT_STARTED', 'CLOSED'].includes(event.status)" align="center" gap="4">
 							<Icon
 								name="arrow_circle_top"
 								size="10"

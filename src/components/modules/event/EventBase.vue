@@ -222,7 +222,7 @@ const wonText = computed(() => {
 
 const priceDynamics = computed(() => {
 	const startRate = Number(event.value.startRate)
-	const endRate = Number(event.value.status == "FINISHED" ? event.value.closedRate : price.value.rate)
+	const endRate = Number(event.value.status == "CLOSED" ? event.value.closedRate : price.value.rate)
 
 	if (!Number.isFinite(startRate) || startRate <= 0 || !Number.isFinite(endRate) || endRate <= 0) {
 		return { diff: 0, percent: 0 }
@@ -418,7 +418,7 @@ watch(event, async () => {
 		case "STARTED":
 			favicon.href = `${baseFavicon}__running.svg`
 			break
-		case "FINISHED":
+		case "CLOSED":
 			favicon.href = `${baseFavicon}__finished.svg`
 			break
 	}
