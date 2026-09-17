@@ -4,12 +4,13 @@ import { injected, metaMask, safe, walletConnect } from '@wagmi/vue/connectors'
 // Get network type from environment variable
 export const NETWORK_TYPE = import.meta.env.VITE_NETWORK_TYPE || 'testnet';
 export const XTZ_ADDRESS = import.meta.env.VITE_XTZ_ADDRESS || "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503"
+const projectId = '325e601684c476ae388c4fad5c753d24'
 
 export const chainConfig = {
-  devnet: {
-    id: 912559,
-    name: 'Shadownet',
-    network: 'devnet',
+  mainnet: {
+    id: 42793,
+    name: 'Etherlink Mainnet',
+    network: 'mainnet',
     nativeCurrency: {
       name: 'XTZ',
       symbol: 'XTZ',
@@ -17,16 +18,16 @@ export const chainConfig = {
     },
     rpcUrls: {
       default: {
-        http: ['https://node.shadownet.etherlink.com'],
-        webSocket: ['wss://node.shadownet.etherlink.com'],
+        http: ['https://mainnet.node.etherlink.com'],
+        webSocket: ['wss://mainnet.node.etherlink.com'],
       },
       public: {
-        http: ['https://node.shadownet.etherlink.com'],
-        webSocket: ['wss://node.shadownet.etherlink.com'],
+        http: ['https://mainnet.node.etherlink.com'],
+        webSocket: ['wss://mainnet.node.etherlink.com'],
       },
     },
     blockExplorers: {
-      default: { name: 'Shadownet Explorer', url: 'https://shadownet.explorer.etherlink.com' },
+      default: { name: 'Etherlink Mainnet Explorer', url: 'https://explorer.etherlink.com' },
     },
   },
   testnet: {
@@ -75,25 +76,17 @@ export const rpcNodes = {
 // Get active RPC node based on environment
 export const activeRpcNode = rpcNodes[NETWORK_TYPE];
 
-// Optional WalletConnect project ID from environment
-const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
-const hasValidWcProjectId = projectId && projectId !== '<WALLETCONNECT_PROJECT_ID>' && projectId !== 'a8220ea67cdb500d78e4cc8b0066a02d';
-
-const activeRpcUrl = Array.isArray(activeChainConfig.rpcUrls.default.http)
-  ? activeChainConfig.rpcUrls.default.http[0]
-  : activeChainConfig.rpcUrls.default.http;
-
 // Create wagmi config with active chain
 export const config = createConfig({
   chains: [activeChainConfig],
   connectors: [
+    walletConnect({ projectId }),
     injected(),
     metaMask(),
     safe(),
-    ...(hasValidWcProjectId ? [walletConnect({ projectId, showQrModal: true })] : []),
   ],
   transports: {
-    [activeChainConfig.id]: http(activeRpcUrl)
+    [activeChainConfig.id]: http(activeChainConfig.rpcUrls.default.http)
   },
 });
 
