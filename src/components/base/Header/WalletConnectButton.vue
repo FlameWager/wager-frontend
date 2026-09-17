@@ -15,23 +15,13 @@
 <script setup>
 import { computed } from 'vue';
 import { useAccountStore } from '@/store/account';
-import { activeChainConfig } from '@config';
 
 const accountStore = useAccountStore();
 
 // Computed properties
-const isConnected = computed(() => accountStore.isConnected);
 const isConnecting = computed(() => accountStore.isConnecting);
-const balance = computed(() => 
-  Number(accountStore.balance).toFixed(4)
-);
-const networkName = computed(() => accountStore.networkName);
-const isCorrectNetwork = computed(() => accountStore.chainId === 912559); // Flame devnet
 
-const shortAddress = computed(() => {
-  if (!accountStore.pkh) return '';
-  return `${accountStore.pkh.substring(0, 6)}...${accountStore.pkh.substring(38)}`;
-});
+
 
 // Methods
 const connect = () => {

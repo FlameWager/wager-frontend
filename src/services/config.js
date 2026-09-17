@@ -59,11 +59,11 @@ export const chainConfig = {
 export const activeChainConfig = chainConfig[NETWORK_TYPE];
 
 export const rpcNodes = {
-  devnet: {
-    url: chainConfig.devnet.rpcUrls.default,
-    chainId: chainConfig.devnet.id,
-    name: chainConfig.devnet.name,
-    code: "devnet"
+  mainnet: {
+    url: chainConfig.mainnet.rpcUrls.default,
+    chainId: chainConfig.mainnet.id,
+    name: chainConfig.mainnet.name,
+    code: "mainnet"
   },
   testnet: {
     url: chainConfig.testnet.rpcUrls.default,

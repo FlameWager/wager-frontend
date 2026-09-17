@@ -58,7 +58,7 @@ if (typeof localStorage !== 'undefined') {
   localStorage.activeNetwork = localStorage.activeNetwork || NETWORK_TYPE;
 
   // Validate "activeNetwork" (Integrity Repair)
-  if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(localStorage.activeNetwork)) {
+  if (![Networks.MAINNET, Networks.TESTNET].includes(localStorage.activeNetwork)) {
     localStorage.activeNetwork = NETWORK_TYPE;
   }
 }
@@ -236,7 +236,7 @@ const initWithSigner = async (signer, address) => {
  * Switch to a different network
  */
 const switchNetwork = async (network, router) => {
-  if (![Networks.MAINNET, Networks.TESTNET, Networks.DEVNET].includes(network)) return
+  if (![Networks.MAINNET, Networks.TESTNET].includes(network)) return
 
   try {
     // Try to switch to the network
