@@ -11,6 +11,7 @@ import { DateTime } from "luxon"
  * Services
  */
 import { flameWager, switchNetwork, currentNetwork } from "@sdk"
+import { getGraphQLUrl } from "@api/graphql"
 import { capitalizeFirstLetter } from "@utils/misc"
 
 /**
@@ -57,16 +58,16 @@ const statusBlock = computed(() => {
 })
 
 const checkDipdup = async () => {
-	const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql"
-	const url = graphqlUrl.replace("/v1/graphql", "")
-
-	if (!url) {
+	const graphqlUrl = getGraphQLUrl()
+	if (!graphqlUrl) {
 		status.dipdup = STATUSES.GOOD
 		return
 	}
 
+	const url = graphqlUrl.replace("/v1/graphql", "")
+
 	try {
-		await axios.get(url)
+		await axios.get(`${url}/healthz`)
 		status.dipdup = STATUSES.GOOD
 	} catch (e) {
 		status.dipdup = STATUSES.DELAYED
@@ -101,16 +102,16 @@ const checkNetwork = async () => {
 }
 
 const checkQuotes = async () => {
-	const graphqlUrl = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql"
-	const url = graphqlUrl.replace("/v1/graphql", "")
-
-	if (!url) {
+	const graphqlUrl = getGraphQLUrl()
+	if (!graphqlUrl) {
 		status.quotes = STATUSES.GOOD
 		return
 	}
 
+	const url = graphqlUrl.replace("/v1/graphql", "")
+
 	try {
-		await axios.get(url)
+		await axios.get(`${url}/healthz`)
 		status.quotes = STATUSES.GOOD
 	} catch (e) {
 		status.quotes = STATUSES.DELAYED

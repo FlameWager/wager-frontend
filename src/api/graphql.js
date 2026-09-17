@@ -7,12 +7,13 @@ import { currentNetwork } from "@/services/sdk"
 export const getGraphQLUrl = () => {
     const networkKey = currentNetwork.value === 'mainnet' ? 'mainnet' : 'testnet'
     const graphqlConfig = dipdup[networkKey];
-    if (!graphqlConfig) {
-        console.warn("GraphQL configuration not found for network:", networkKey)
-        // Default to the common Hasura port from docker-compose
-        return import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql"
+    if (!graphqlConfig || !graphqlConfig.graphql) {
+        if (!import.meta.env.VITE_GRAPHQL_URL) {
+            console.warn("GraphQL configuration not found for network:", networkKey)
+        }
+        return import.meta.env.VITE_GRAPHQL_URL || ""
     }
-    return graphqlConfig.graphq || graphqlConfig.graphql
+    return graphqlConfig.graphql
 }
 
 /**

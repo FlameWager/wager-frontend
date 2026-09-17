@@ -92,7 +92,7 @@ export const useAccountStore = defineStore({
 
         return true;
       } catch (error) {
-        console.error('Connection error:', error);
+        console.error('Connection error:', error?.message || error?.name || error, error?.stack, error);
         throw error;
       } finally {
         this.isConnecting = false;

@@ -4,7 +4,6 @@ import { injected, metaMask, safe, walletConnect } from '@wagmi/vue/connectors'
 // Get network type from environment variable
 export const NETWORK_TYPE = import.meta.env.VITE_NETWORK_TYPE || 'testnet';
 export const XTZ_ADDRESS = import.meta.env.VITE_XTZ_ADDRESS || "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503"
-// const projectId = '<WALLETCONNECT_PROJECT_ID>'
 
 export const chainConfig = {
   devnet: {
@@ -76,21 +75,29 @@ export const rpcNodes = {
 // Get active RPC node based on environment
 export const activeRpcNode = rpcNodes[NETWORK_TYPE];
 
+// Optional WalletConnect project ID from environment
+const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '';
+const hasValidWcProjectId = projectId && projectId !== '<WALLETCONNECT_PROJECT_ID>' && projectId !== 'a8220ea67cdb500d78e4cc8b0066a02d';
+
+const activeRpcUrl = Array.isArray(activeChainConfig.rpcUrls.default.http)
+  ? activeChainConfig.rpcUrls.default.http[0]
+  : activeChainConfig.rpcUrls.default.http;
+
 // Create wagmi config with active chain
 export const config = createConfig({
   chains: [activeChainConfig],
   connectors: [
-    metaMask(),
     injected(),
-    // walletConnect({ projectId }),
+    metaMask(),
     safe(),
+    ...(hasValidWcProjectId ? [walletConnect({ projectId, showQrModal: true })] : []),
   ],
   transports: {
-    [activeChainConfig.id]: http(activeChainConfig.rpcUrls.default.http)
+    [activeChainConfig.id]: http(activeRpcUrl)
   },
 });
 
-const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8081/v1/graphql";
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || "";
 const GRAPHQL_WS = GRAPHQL_URL.replace(/^http/, 'ws');
 
 export const dipdup = {

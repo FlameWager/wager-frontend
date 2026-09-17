@@ -84,7 +84,7 @@ const init = () => {
     flameWager.signer
   ))
 
-  if (!graphqlConfig) {
+  if (!graphqlConfig || !graphqlConfig.graphql) {
     console.warn("GraphQL configuration not found for network:", networkKey)
     return
   }
