@@ -449,7 +449,7 @@ onUnmounted(() => {
 							<template v-if="event.creator && verifiedMakers[currentNetwork].includes(event.creator.address)">
 								<Flex align="center" gap="6">
 									<Icon name="repeat" size="14" color="secondary" />
-									Recurring event by Juster
+									Recurring event by Wager
 								</Flex>
 							</template>
 							<template v-else> Custom event from user </template>

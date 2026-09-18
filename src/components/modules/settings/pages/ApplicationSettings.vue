@@ -200,7 +200,7 @@ const showSlippageToleranceDropdown = ref(false)
 			<Flex justify="between" gap="24">
 				<Flex direction="column" gap="6">
 					<Text size="13" weight="600" color="primary">
-						Events only by Juster Team
+						Events only by Wager Team
 					</Text>
 					<Text size="13" weight="500" color="tertiary" height="16">
 						Show events strictly from the Juster Team only
