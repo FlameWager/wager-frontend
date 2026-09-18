@@ -11,6 +11,7 @@ import {
 } from '@wagmi/core';
 import { injected, metaMask } from '@wagmi/vue/connectors'
 import { config, activeRpcNode, activeChainConfig, XTZ_ADDRESS } from "@config";
+import { useNotificationsStore } from "./notifications";
 
 export const useAccountStore = defineStore({
   id: 'account',
@@ -58,28 +59,54 @@ export const useAccountStore = defineStore({
 
   actions: {
     async connectWallet() {
+      const notificationsStore = useNotificationsStore();
       try {
         this.isConnecting = true;
 
-        // Connect using wagmi with metamask/injected connector
+        // Check if Web3 wallet is available in browser
+        if (typeof window !== 'undefined' && !window.ethereum) {
+          notificationsStore.create({
+            notification: {
+              type: "warning",
+              title: "No Web3 Wallet Found",
+              description: "Please install MetaMask or another Web3 wallet extension to connect.",
+              autoDestroy: true,
+              actions: [
+                {
+                  name: "Install MetaMask",
+                  icon: "open",
+                  callback: () => {
+                    window.open("https://metamask.io/download/", "_blank");
+                  }
+                }
+              ]
+            }
+          });
+          return false;
+        }
+
+        const connector = config.connectors.find(c => c.id === 'injected' || c.id === 'metaMaskSDK') || injected();
+
+        // Connect using wagmi
         const result = await connect(config, {
           chainId: activeChainConfig.id,
-          connector: injected(),
+          connector,
         });
 
-        if (!result.accounts.length) {
-          throw new Error('Failed to connect wallet');
+        if (!result.accounts || !result.accounts.length) {
+          throw new Error('Failed to connect wallet: No account selected');
         }
 
         // Set address
         this.pkh = result.accounts[0];
 
-        // Create ethers provider & signer from the injected provider
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        const signer = await provider.getSigner()
+        // Create ethers provider & signer from the connected provider
+        const rawProvider = (await result.connector?.getProvider?.()) || window.ethereum;
+        const provider = new ethers.BrowserProvider(rawProvider);
+        const signer = await provider.getSigner();
 
         // Initialize FlameWager SDK with the signer
-        await initWithSigner(signer, result.accounts[0])
+        await initWithSigner(signer, result.accounts[0]);
 
         // Get and set network info
         this.chainId = activeChainConfig.id;
@@ -90,10 +117,65 @@ export const useAccountStore = defineStore({
         // Save connection state
         localStorage.setItem('wallet-autoconnect', 'true');
 
+        notificationsStore.create({
+          notification: {
+            type: "success",
+            title: "Wallet Connected",
+            description: `Connected to ${this.pkh.slice(0, 6)}...${this.pkh.slice(-4)}`,
+            autoDestroy: true
+          }
+        });
+
         return true;
       } catch (error) {
-        console.error('Connection error:', error?.message || error?.name || error, error?.stack, error);
-        throw error;
+        console.error('Connection error:', error);
+
+        const errMessage = error?.message || error?.toString() || '';
+        const isDappDisabled = error?.code === 4100 || errMessage.toLowerCase().includes('dapp interaction is disabled');
+        const isUserRejected = error?.code === 4001 || 
+          errMessage.toLowerCase().includes('reject') || 
+          errMessage.toLowerCase().includes('denied') ||
+          errMessage.toLowerCase().includes('user cancelled');
+        const isPending = error?.code === -32002 || errMessage.toLowerCase().includes('already pending');
+
+        if (isDappDisabled) {
+          notificationsStore.create({
+            notification: {
+              type: "warning",
+              title: "DApp Interaction Disabled",
+              description: "Your wallet extension has DApp interactions disabled or is locked. Please unlock your wallet and enable DApp access in your wallet extension settings.",
+              autoDestroy: true
+            }
+          });
+        } else if (isUserRejected) {
+          notificationsStore.create({
+            notification: {
+              type: "warning",
+              title: "Connection Cancelled",
+              description: "You rejected the connection request in your wallet.",
+              autoDestroy: true
+            }
+          });
+        } else if (isPending) {
+          notificationsStore.create({
+            notification: {
+              type: "warning",
+              title: "Request Pending",
+              description: "A connection request is already pending in your wallet extension. Please open your wallet extension to approve.",
+              autoDestroy: true
+            }
+          });
+        } else {
+          notificationsStore.create({
+            notification: {
+              type: "warning",
+              title: "Connection Failed",
+              description: errMessage || "Could not connect to wallet.",
+              autoDestroy: true
+            }
+          });
+        }
+        return false;
       } finally {
         this.isConnecting = false;
       }

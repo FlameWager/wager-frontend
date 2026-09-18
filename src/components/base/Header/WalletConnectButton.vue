@@ -24,8 +24,12 @@ const isConnecting = computed(() => accountStore.isConnecting);
 
 
 // Methods
-const connect = () => {
-  accountStore.connectWallet();
+const connect = async () => {
+  try {
+    await accountStore.connectWallet();
+  } catch (e) {
+    // Errors handled with notifications in accountStore
+  }
 };
 
 const disconnect = () => {
