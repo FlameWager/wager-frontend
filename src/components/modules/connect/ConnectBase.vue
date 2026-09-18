@@ -138,13 +138,6 @@ const handleLogout = async () => {
 			title: "You are signed out",
 			description: "If you need to change your account, use the settings",
 			autoDestroy: true,
-
-			actions: [
-				{
-					name: "Back to Connection page",
-					callback: () => router.push("/connect"),
-				},
-			],
 		},
 	})
 }
