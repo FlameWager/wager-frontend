@@ -6,10 +6,13 @@
 		"dev": "vite",
 		"build": "vite build",
 		"build:stats": "STATS=true vite build",
-		"serve": "vite preview"
+		"serve": "vite preview",
+		"postinstall": "node -e \"const fs=require('fs');const p='node_modules/@base-org/account/dist/core/constants.js';if(fs.existsSync(p)){fs.writeFileSync(p, \\\"export const CB_KEYS_URL = 'https://keys.coinbase.com/connect';\\\\nexport const CB_WALLET_RPC_URL = 'https://rpc.wallet.coinbase.com';\\\\nexport const PACKAGE_NAME = '@base-org/account';\\\\nexport const PACKAGE_VERSION = '1.1.1';\\\\n\\\");}\""
 	},
 	"dependencies": {
+		"@privy-io/react-auth": "^3.43.0",
 		"@rollup/plugin-inject": "^5.0.2",
+		"@stripe/stripe-js": "^9.16.0",
 		"@tanstack/vue-query": "^5.69.0",
 		"@urql/core": "^6.0.1",
 		"@urql/vue": "^2.0.0",
@@ -32,8 +35,11 @@
 		"node-stdlib-browser": "^1.2.0",
 		"pinia": "^2.1.6",
 		"qrcode": "^1.5.1",
+		"react": "^19.3.0",
+		"react-dom": "^19.3.0",
 		"shiki": "^0.14.0",
 		"uuid": "^8.3.2",
+		"veaury": "^2.6.3",
 		"viem": "2.x",
 		"vite-plugin-node-stdlib-browser": "^0.1.1",
 		"vue": "^3.3.4",
@@ -43,7 +49,9 @@
 		"wagmi": "^2.14.15"
 	},
 	"devDependencies": {
+		"@vitejs/plugin-react": "^4.7.0",
 		"@vitejs/plugin-vue": "^4.3.4",
+		"@vitejs/plugin-vue-jsx": "^3.1.0",
 		"bignumber.js": "^9.1.1",
 		"cypress": "^10.3.1",
 		"eslint": "^8.48.0",
@@ -52,7 +60,8 @@
 		"prettier": "^3.0.3",
 		"rollup-plugin-re": "^1.0.7",
 		"rollup-plugin-visualizer": "^5.8.3",
-		"vite": "^4.4.9"
+		"vite": "^4.4.9",
+		"vite-plugin-node-polyfills": "^0.28.0"
 	},
 	"browserslist": [
 		"> 1%",

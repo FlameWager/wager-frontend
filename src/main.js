@@ -2,7 +2,15 @@
 import { createApp, h } from "vue"
 import { createMetaManager } from "vue-meta"
 import { createPinia } from "pinia"
+import { createRoot } from "react-dom/client"
+import { setVeauryOptions } from "veaury"
 import { useAccountStore } from './store/account';
+
+setVeauryOptions({
+	react: {
+		createRoot,
+	},
+});
 
 // Import modules.
 import { VueQueryPlugin } from '@tanstack/vue-query';

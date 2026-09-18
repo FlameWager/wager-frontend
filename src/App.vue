@@ -20,6 +20,7 @@ import "@/styles/text.css"
 import Teleports from "@base/Teleports.vue"
 import TheHeader from "@base/Header/TheHeader.vue"
 import Footer from "@base/Footer.vue"
+import PrivyBridge from "@/components/auth/PrivyBridge.vue"
 // import NetworkStatus from "@base/NetworkStatus.vue"
 
 /**
@@ -118,6 +119,7 @@ setupMarket()
 </script>
 
 <template>
+	<PrivyBridge />
 	<Teleports />
 	<!-- <ConfirmationModal :show="appStore.confirmation.show" /> -->
 	<Notifications />

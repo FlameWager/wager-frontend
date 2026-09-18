@@ -1,10 +1,10 @@
 import { defineConfig } from "vite"
 import { visualizer } from "rollup-plugin-visualizer"
 import replace from "rollup-plugin-re"
-import vue from "@vitejs/plugin-vue"
+import veauryVitePlugins from "veaury/vite/index.js"
 import path from "path"
 
-import nodePolyfills from "vite-plugin-node-stdlib-browser"
+import { nodePolyfills } from "vite-plugin-node-polyfills"
 const production = process.env.NODE_ENV === "production";
 
 const aliases = {
@@ -24,6 +24,7 @@ const aliases = {
 	"@sdk": path.resolve(__dirname, "./src/services/sdk"),
 	"@utils": path.resolve(__dirname, "./src/services/utils"),
 	"@store": path.resolve(__dirname, "./src/store"),
+	"@react": path.resolve(__dirname, "./src/react_app"),
 }
 
 export default (ctx) => {
@@ -31,13 +32,16 @@ export default (ctx) => {
 
 	return defineConfig({
 		plugins: [
-			vue(),
-			!production &&
+			...veauryVitePlugins({
+				type: "vue",
+			}),
 			nodePolyfills({
-				include: [
-					"node_modules/**/*.js",
-					new RegExp("node_modules/.vite/.*js"),
-				],
+				globals: {
+					Buffer: true,
+					global: true,
+					process: true,
+				},
+				protocolImports: true,
 			}),
 			...(process.env.STATS
 				? [
@@ -71,10 +75,6 @@ export default (ctx) => {
 					'@safe-window/safe-apps-provider',
 					'@safe-window/safe-apps-sdk',
 				],
-				plugins: [
-					// ↓ Needed for build
-					nodePolyfills()
-				]
 			},
 			// ↓ Needed for build if using WalletConnect and other providers
 			commonjsOptions: {

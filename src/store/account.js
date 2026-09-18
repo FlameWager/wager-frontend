@@ -1,17 +1,15 @@
-// src/store/wallet.js
+// src/store/account.js
 import { defineStore } from 'pinia';
 import { ethers } from 'ethers';
 import { flameWager, initWithSigner } from "@sdk";
-import {
-  getBalance,
-  disconnect,
-  connect,
-  reconnect,
-  switchChain
-} from '@wagmi/core';
-import { injected, metaMask } from '@wagmi/vue/connectors'
+import { getBalance, disconnect } from '@wagmi/core';
 import { config, activeRpcNode, activeChainConfig, XTZ_ADDRESS } from "@config";
 import { useNotificationsStore } from "./notifications";
+import {
+  privyState,
+  subscribePrivyState,
+  isRealPrivyAppIdConfigured,
+} from "@/services/privy";
 
 export const useAccountStore = defineStore({
   id: 'account',
@@ -45,6 +43,8 @@ export const useAccountStore = defineStore({
       if (!state.chainId) return 'Not Connected';
 
       switch (state.chainId) {
+        case 42793:
+          return "Etherlink Mainnet";
         case 127823:
           return "Etherlink Shadownet";
         default:
@@ -58,123 +58,109 @@ export const useAccountStore = defineStore({
   },
 
   actions: {
+    setPkh(address) {
+      this.pkh = address;
+    },
+
+    async handlePrivyStateChange(state) {
+      const notificationsStore = useNotificationsStore();
+
+      if (state.authenticated && state.wallets && state.wallets.length > 0) {
+        // Select active wallet matching user's primary wallet or default to the first wallet
+        const activeWallet =
+          state.wallets.find(
+            (w) => w.address?.toLowerCase() === state.user?.wallet?.address?.toLowerCase()
+          ) || state.wallets[0];
+        const newAddress = activeWallet.address;
+
+        if (this.pkh.toLowerCase() !== newAddress.toLowerCase() || !this.signer) {
+          try {
+            this.pkh = newAddress;
+            this.chainId = activeChainConfig.id;
+
+            // Ensure wallet is on the configured Etherlink network
+            const currentChainId = activeWallet.chainId
+              ? parseInt(activeWallet.chainId.replace('eip155:', ''), 10)
+              : null;
+            if (currentChainId && currentChainId !== activeChainConfig.id && typeof activeWallet.switchChain === 'function') {
+              try {
+                await activeWallet.switchChain(activeChainConfig.id);
+              } catch (switchErr) {
+                console.warn('Could not auto-switch wallet chain:', switchErr);
+              }
+            }
+
+            // Get EIP-1193 provider from connected Privy wallet
+            const rawProvider = await activeWallet.getEthereumProvider();
+            const provider = new ethers.BrowserProvider(rawProvider);
+            const signer = await provider.getSigner();
+
+            this.provider = provider;
+            this.signer = signer;
+
+            // Initialize FlameWager SDK with signer
+            await initWithSigner(signer, newAddress);
+
+            // Fetch balance
+            await this.refreshBalance();
+
+            notificationsStore.create({
+              notification: {
+                type: "success",
+                title: "Wallet Connected",
+                description: `Connected to ${newAddress.slice(0, 6)}...${newAddress.slice(-4)}`,
+                autoDestroy: true
+              }
+            });
+          } catch (error) {
+            console.error("Error initializing Privy signer/provider:", error);
+          }
+        }
+      } else if (!state.authenticated && this.pkh) {
+        this.handleDisconnect();
+      }
+    },
+
     async connectWallet() {
       const notificationsStore = useNotificationsStore();
       try {
         this.isConnecting = true;
 
-        // Check if Web3 wallet is available in browser
-        if (typeof window !== 'undefined' && !window.ethereum) {
+        if (!isRealPrivyAppIdConfigured()) {
           notificationsStore.create({
             notification: {
               type: "warning",
-              title: "No Web3 Wallet Found",
-              description: "Please install MetaMask or another Web3 wallet extension to connect.",
-              autoDestroy: true,
-              actions: [
-                {
-                  name: "Install MetaMask",
-                  icon: "open",
-                  callback: () => {
-                    window.open("https://metamask.io/download/", "_blank");
-                  }
-                }
-              ]
+              title: "Privy App ID Not Configured",
+              description: "Please set VITE_PRIVY_APP_ID in your .env file with your Privy App ID from dashboard.privy.io to enable login.",
+              autoDestroy: false
             }
           });
-          return false;
         }
 
-        const connector = config.connectors.find(c => c.id === 'injected' || c.id === 'metaMaskSDK') || injected();
-
-        // Connect using wagmi
-        const result = await connect(config, {
-          chainId: activeChainConfig.id,
-          connector,
-        });
-
-        if (!result.accounts || !result.accounts.length) {
-          throw new Error('Failed to connect wallet: No account selected');
-        }
-
-        // Set address
-        this.pkh = result.accounts[0];
-
-        // Create ethers provider & signer from the connected provider
-        const rawProvider = (await result.connector?.getProvider?.()) || window.ethereum;
-        const provider = new ethers.BrowserProvider(rawProvider);
-        const signer = await provider.getSigner();
-
-        // Initialize FlameWager SDK with the signer
-        await initWithSigner(signer, result.accounts[0]);
-
-        // Get and set network info
-        this.chainId = activeChainConfig.id;
-
-        // Get balance
-        await this.refreshBalance();
-
-        // Save connection state
-        localStorage.setItem('wallet-autoconnect', 'true');
-
-        notificationsStore.create({
-          notification: {
-            type: "success",
-            title: "Wallet Connected",
-            description: `Connected to ${this.pkh.slice(0, 6)}...${this.pkh.slice(-4)}`,
-            autoDestroy: true
-          }
-        });
-
-        return true;
-      } catch (error) {
-        console.error('Connection error:', error);
-
-        const errMessage = error?.message || error?.toString() || '';
-        const isDappDisabled = error?.code === 4100 || errMessage.toLowerCase().includes('dapp interaction is disabled');
-        const isUserRejected = error?.code === 4001 || 
-          errMessage.toLowerCase().includes('reject') || 
-          errMessage.toLowerCase().includes('denied') ||
-          errMessage.toLowerCase().includes('user cancelled');
-        const isPending = error?.code === -32002 || errMessage.toLowerCase().includes('already pending');
-
-        if (isDappDisabled) {
-          notificationsStore.create({
-            notification: {
-              type: "warning",
-              title: "DApp Interaction Disabled",
-              description: "Your wallet extension has DApp interactions disabled or is locked. Please unlock your wallet and enable DApp access in your wallet extension settings.",
-              autoDestroy: true
-            }
-          });
-        } else if (isUserRejected) {
-          notificationsStore.create({
-            notification: {
-              type: "warning",
-              title: "Connection Cancelled",
-              description: "You rejected the connection request in your wallet.",
-              autoDestroy: true
-            }
-          });
-        } else if (isPending) {
-          notificationsStore.create({
-            notification: {
-              type: "warning",
-              title: "Request Pending",
-              description: "A connection request is already pending in your wallet extension. Please open your wallet extension to approve.",
-              autoDestroy: true
-            }
-          });
+        if (privyState.login) {
+          await privyState.login();
+          return true;
         } else {
           notificationsStore.create({
             notification: {
               type: "warning",
-              title: "Connection Failed",
-              description: errMessage || "Could not connect to wallet.",
+              title: "Privy Initializing",
+              description: "Privy authentication is still loading. Please try again in a moment.",
               autoDestroy: true
             }
           });
+          return false;
         }
+      } catch (error) {
+        console.error("Privy login error:", error);
+        notificationsStore.create({
+          notification: {
+            type: "warning",
+            title: "Login Error",
+            description: error?.message || "Failed to log in with Privy.",
+            autoDestroy: true
+          }
+        });
         return false;
       } finally {
         this.isConnecting = false;
@@ -183,31 +169,30 @@ export const useAccountStore = defineStore({
 
     async logout() {
       try {
-        // Disconnect using wagmi
-        await disconnect();
-
-        // Reset state
+        if (privyState.logout) {
+          await privyState.logout();
+        }
+        await disconnect().catch(() => {});
         this.handleDisconnect();
       } catch (error) {
         console.error('Logout error:', error);
+        this.handleDisconnect();
       }
     },
 
     handleDisconnect() {
-      // Reset all state
       this.provider = null;
       this.signer = null;
       this.pkh = "";
       this.chainId = null;
       this.balance = "0";
+      this.btcBalance = "0";
       this.positionsForWithdrawal = [];
       this.pendingTransaction = {
         awaiting: false,
         when: null,
         hash: null
       };
-
-      // Clear local storage
       localStorage.removeItem('wallet-autoconnect');
     },
 
@@ -219,12 +204,17 @@ export const useAccountStore = defineStore({
       if (!this.pkh) return;
 
       try {
-        // Fetch native XTZ balance (main betting currency)
-        const nativeBalanceData = await getBalance(config, {
-          address: this.pkh,
-          chainId: activeChainConfig.id,
-        });
-        const bal = ethers.formatEther(nativeBalanceData.value);
+        let bal = "0";
+        if (this.provider) {
+          const balanceWei = await this.provider.getBalance(this.pkh);
+          bal = ethers.formatEther(balanceWei);
+        } else {
+          const nativeBalanceData = await getBalance(config, {
+            address: this.pkh,
+            chainId: activeChainConfig.id,
+          });
+          bal = ethers.formatEther(nativeBalanceData.value);
+        }
         this.balance = bal;
         this.btcBalance = bal;
       } catch (error) {
@@ -256,45 +246,11 @@ export const useAccountStore = defineStore({
       };
     },
 
-    async init() {
-      // Attempt to auto-connect using wagmi's reconnect
-      try {
-        const result = await reconnect(config);
-
-        if (result && result.length > 0) {
-          // Success, update state
-          this.pkh = result[0].accounts[0];
-          this.chainId = activeChainConfig.id;
-
-          // Initialize FlameWager SDK with signer on auto-connect
-          if (window.ethereum) {
-            const provider = new ethers.BrowserProvider(window.ethereum)
-            const signer = await provider.getSigner()
-            await initWithSigner(signer, this.pkh)
-          }
-
-          await this.refreshBalance();
-          localStorage.setItem('wallet-autoconnect', 'true');
-        } else {
-          // If reconnect fails/returns empty, check manual flag as fallback
-          const shouldAutoConnect = localStorage.getItem('wallet-autoconnect') === 'true';
-          if (shouldAutoConnect) {
-            await this.connectWallet();
-          }
-        }
-      } catch (error) {
-        console.error('Auto-connect failed:', error);
-        // Fallback to manual connect if reconnect throws (but check flag first)
-        const shouldAutoConnect = localStorage.getItem('wallet-autoconnect') === 'true';
-        if (shouldAutoConnect) {
-          try {
-            await this.connectWallet();
-          } catch (e) {
-            console.error("Manual connect fallback failed", e);
-            localStorage.removeItem('wallet-autoconnect');
-          }
-        }
-      }
+    init() {
+      // Subscribe to Privy auth and wallet state changes
+      subscribePrivyState(async (state) => {
+        await this.handlePrivyStateChange(state);
+      });
     }
   }
 });

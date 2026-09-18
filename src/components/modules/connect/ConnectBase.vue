@@ -56,21 +56,7 @@ useMeta({
 })
 
 const handleBeacon = async () => {
-	try {
-		await juster.sdk.sync()
-		login()
-	} catch (error) {
-		if (error.title === "Aborted") {
-			notificationsStore.create({
-				notification: {
-					type: "Warning",
-					title: "Wallet connection rejected",
-					description: "Try again.",
-					autoDestroy: true,
-				},
-			})
-		}
-	}
+	await accountStore.connectWallet()
 }
 
 const login = () => {
@@ -144,8 +130,8 @@ const handleSelectCustomNode = async (node) => {
 	login()
 }
 
-const handleLogout = () => {
-	accountStore.logout()
+const handleLogout = async () => {
+	await accountStore.logout()
 	notificationsStore.create({
 		notification: {
 			icon: "logout",
@@ -219,7 +205,7 @@ onMounted(async () => {
 					keybind="B"
 				>
 					<Icon name="login" size="16" />
-					Beacon Wallet
+					Connect with Privy
 				</Button>
 				<Button
 					@click="handleCustomLogin"

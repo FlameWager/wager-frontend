@@ -42,10 +42,8 @@ const handleOpenWithdrawals = () => {
 	analytics.log("openWithdrawals")
 }
 
-const handleLogout = () => {
-	/** confirmation.request -> onConfirm -> callback */
-	accountStore.logout()
-	location.reload()
+const handleLogout = async () => {
+	await accountStore.logout()
 	notificationsStore.create({
 		notification: {
 			icon: "logout",
